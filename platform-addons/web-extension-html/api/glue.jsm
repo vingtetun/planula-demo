@@ -36,7 +36,7 @@ var WindowUtils = {
         return new Promise(done => {
           window.addEventListener("load", function onLoad() {
             window.removeEventListener("load", onLoad);
-            done(WindowUtils.getWindow());
+            done(window);
           }, true);
         });
       }

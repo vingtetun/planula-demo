@@ -1,6 +1,4 @@
 
-dump('browserAction\n');
-
 Cu.import("resource://gre/modules/ExtensionUtils.jsm");
 
 var {
@@ -42,7 +40,6 @@ function normalize(path, extension) {
 
 let btnCount = 1;
 function BrowserAction(options, extension) {
-  dump("BrowserAction()\n");
   let title = extension.localize(options.default_title || "");
   let popup = extension.localize(options.default_popup || "");
   if (popup) {
@@ -83,7 +80,6 @@ BrowserAction.prototype = {
     }
   },
   _update(data) {
-    dump("BrowserAction.update("+JSON.stringify(data)+")\n");
     WindowUtils.emit('browserAction', 'update', data);
   },
   getProperty(name, tabId) {
@@ -120,7 +116,6 @@ extensions.registerSchemaAPI("browserAction", null, (extension, context) => {
   }
   let currentTab;
   let onTabSelect = function ({uuid, url, title}) {
-    dump("onTabSelect("+uuid+" / "+url+" / "+title+"\n");
     currentTab = TabManager.getIdForUUID(uuid);
   }
   WindowUtils.on("tabs", "select", onTabSelect);
@@ -172,5 +167,3 @@ extensions.registerSchemaAPI("browserAction", null, (extension, context) => {
   }
   return { browserAction };
 });
-
-dump("browserAction.js: parsed\n");

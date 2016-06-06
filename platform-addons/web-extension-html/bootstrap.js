@@ -21,13 +21,16 @@ function startup() {
   // Ensure dispatching "browser-delayed-startup-finished" to not break marionette
   // GeckoDriver.prototype.newSession
   // in testing/marionette/driver.js
-  /*
+  // Note that it also starts devtools.
   Cu.import("resource://webextensions/glue.jsm");
-  WindowUtils.ready().then(() => WindowUtils.getWindow()).then(window => {
-    dump("Services ready\n");
-    Services.obs.notifyObservers(window, "browser-delayed-startup-finished", null);
-  });
-  */
+  // No idea why but WindowUtils.getWindow() only resolves if we wait for a 1s
+  // before calling it :/
+  let {setTimeout} = Cu.import("resource://gre/modules/Timer.jsm", {});
+  setTimeout(function () {
+    WindowUtils.getWindow().then(function (window) {
+      Services.obs.notifyObservers(window, "browser-delayed-startup-finished", null);
+    });
+  }, 1000);
 }
 
 function install() {

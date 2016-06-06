@@ -1,0 +1,126 @@
+8f9c848 Fix debugger html iframe in parent process.
+diff --git a/devtools/server/actors/webbrowser.js b/devtools/server/actors/webbrowser.js
+index 3269516..c1bc9c7 100644
+--- a/devtools/server/actors/webbrowser.js
++++ b/devtools/server/actors/webbrowser.js
+@@ -2159,7 +2159,7 @@ function BrowserTabActor(connection, browser) {
+   }
+ 
+   Object.defineProperty(this, "docShell", {
+-    value: this._browser.docShell,
++    value: this._browser.frameLoader.docShell,
+     configurable: true
+   });
+ }
+4767567 Emit TabActor.tabDetached whenever the actor is detached.
+diff --git a/devtools/server/actors/webbrowser.js b/devtools/server/actors/webbrowser.js
+index 4e66fcd..3269516 100644
+--- a/devtools/server/actors/webbrowser.js
++++ b/devtools/server/actors/webbrowser.js
+@@ -1138,10 +1138,7 @@ TabActor.prototype = {
+       this.threadActor._tabClosed = true;
+     }
+ 
+-    if (this._detach()) {
+-      this.conn.send({ from: this.actorID,
+-                       type: "tabDetached" });
+-    }
++    this._detach();
+ 
+     Object.defineProperty(this, "docShell", {
+       value: null,
+@@ -1533,6 +1530,9 @@ TabActor.prototype = {
+ 
+     this._attached = false;
+ 
++    this.conn.send({ from: this.actorID,
++                     type: "tabDetached" });
++
+     return true;
+   },
+ 
+2b0a789f Support TabActor.getTab against mozbrowser iframes
+diff --git a/devtools/server/actors/webbrowser.js b/devtools/server/actors/webbrowser.js
+index 20caf21..4e66fcd 100644
+--- a/devtools/server/actors/webbrowser.js
++++ b/devtools/server/actors/webbrowser.js
+@@ -395,9 +395,13 @@ BrowserTabList.prototype._getActorForBrowser = function (browser) {
+ 
+ BrowserTabList.prototype.getTab = function ({ outerWindowID, tabId }) {
+   if (typeof outerWindowID == "number") {
+-    for (let browser of this._getBrowsers()) {
+-      if (browser.outerWindowID == outerWindowID) {
+-        return this._getActorForBrowser(browser);
++    let window = Services.wm.getOuterWindowWithId(outerWindowID);
++    if (window) {
++      let iframe = window.QueryInterface(Ci.nsIInterfaceRequestor)
++                         .getInterface(Ci.nsIDOMWindowUtils)
++                         .containerElement;
++      if (iframe) {
++        return this._getActorForBrowser(iframe);
+       }
+     }
+     return promise.reject({
+9dc0391 Destroy the toolbox on unload
+diff --git a/devtools/client/framework/toolbox-init.js b/devtools/client/framework/toolbox-init.js
+index 6d46338..14fb397 100644
+--- a/devtools/client/framework/toolbox-init.js
++++ b/devtools/client/framework/toolbox-init.js
+@@ -58,7 +58,15 @@ if (url.search.length > 1) {
+         let form = response.tab;
+         let target = yield TargetFactory.forRemoteTab({client, form, chrome: false});
+         let options = { customIframe: host };
+-        yield gDevTools.showToolbox(target, tool, Toolbox.HostType.CUSTOM, options);
++        let toolbox = yield gDevTools.showToolbox(target, tool, Toolbox.HostType.CUSTOM, options);
++        function onUnload() {
++          window.removeEventListener("unload", onUnload);
++          toolbox.destroy();
++        }
++        window.addEventListener("unload", onUnload);
++        toolbox.on("destroy", function () {
++          window.removeEventListener("unload", onUnload);
++        });
+       });
+     }
+   } else {
+fcce2ec Support loading devtools in something else than browser.xul
+diff --git a/devtools/client/framework/devtools-browser.js b/devtools/client/framework/devtools-browser.js
+index 03daf76..4610175 100644
+--- a/devtools/client/framework/devtools-browser.js
++++ b/devtools/client/framework/devtools-browser.js
+@@ -401,6 +401,9 @@ var gDevToolsBrowser = exports.gDevToolsBrowser = {
+    *        The document to which devtools should be hooked to.
+    */
+   _registerBrowserWindow: function (win) {
++    if (!win.gBrowser) {
++      return;
++    }
+     if (gDevToolsBrowser._trackedBrowserWindows.has(win)) {
+       return;
+     }
+496db73 Bug xxxx - Support listing tabs on non-Firefox desktop runtime. r=jryans
+diff --git a/devtools/server/actors/webbrowser.js b/devtools/server/actors/webbrowser.js
+index 581de41..20caf21 100644
+--- a/devtools/server/actors/webbrowser.js
++++ b/devtools/server/actors/webbrowser.js
+@@ -302,7 +302,19 @@ BrowserTabList.prototype._getBrowsers = function* () {
+ 
+ BrowserTabList.prototype._getChildren = function (window) {
+   if (!window.gBrowser) {
+-    return [];
++    // When we aren't on Firefox browser.xul, look for all iframes
++    let frames = [];
++    let getDeepChilds = function (window) {
++      [...window.document.querySelectorAll("iframe")]
++        .forEach(frame => {
++          frames.push(frame);
++          if (frame.contentWindow) {
++            getDeepChilds(frame.contentWindow);
++          }
++        });
++    }
++    getDeepChilds(window);
++    return frames;
+   }
+   let { gBrowser } = window;
+   if (!gBrowser.browsers) {
