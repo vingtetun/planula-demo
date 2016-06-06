@@ -1,0 +1,129 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/dom/browser-element/BrowserElementChildPreload.js b/dom/browser-element/BrowserElementChildPreload.js
+--- a/dom/browser-element/BrowserElementChildPreload.js
++++ b/dom/browser-element/BrowserElementChildPreload.js
+@@ -18,16 +18,18 @@ Cu.import("resource://gre/modules/Extens
+ 
+ XPCOMUtils.defineLazyServiceGetter(this, "acs",
+                                    "@mozilla.org/audiochannel/service;1",
+                                    "nsIAudioChannelService");
+ XPCOMUtils.defineLazyModuleGetter(this, "ManifestFinder",
+                                   "resource://gre/modules/ManifestFinder.jsm");
+ XPCOMUtils.defineLazyModuleGetter(this, "ManifestObtainer",
+                                   "resource://gre/modules/ManifestObtainer.jsm");
++XPCOMUtils.defineLazyModuleGetter(this, "SelectContentHelper",
++                                  "resource://gre/modules/SelectContentHelper.jsm");
+ 
+ 
+ var kLongestReturnedString = 128;
+ 
+ const Timer = Components.Constructor("@mozilla.org/timer;1",
+                                      "nsITimer",
+                                      "initWithCallback");
+ 
+@@ -234,16 +236,21 @@ BrowserElementChild.prototype = {
+     // bubble, and we're not using a capturing listener.  If we'd used
+     // useCapture == true, we /would/ hear unload events from the window, which
+     // is not what we want!
+     addEventListener('unload',
+                      this._unloadHandler.bind(this),
+                      /* useCapture = */ false,
+                      /* wantsUntrusted = */ false);
+ 
++    addEventListener('mozshowdropdown',
++                    this._dropdownMenuHandler.bind(this),
++                     /* useCapture = */ false,
++                     /* wantsUntrusted = */ false);
++
+     // Registers a MozAfterPaint handler for the very first paint.
+     this._addMozAfterPaintHandler(function () {
+       sendAsyncMsg('firstpaint');
+     });
+ 
+     let self = this;
+ 
+     let mmCalls = {
+@@ -812,16 +819,21 @@ BrowserElementChild.prototype = {
+ 
+     debug("resizing window " + win);
+     sendAsyncMsg('resize', { width: e.detail.width, height: e.detail.height });
+ 
+     // Inform the window implementation that we handled this resize ourselves.
+     e.preventDefault();
+   },
+ 
++  _dropdownMenuHandler: function(e) {
++    debug("Got dropdown");
++    new SelectContentHelper(e.target, global);
++  },
++
+   _contextmenuHandler: function(e) {
+     debug("Got contextmenu");
+ 
+     if (e.defaultPrevented) {
+       return;
+     }
+ 
+     this._ctxCounter++;
+diff --git a/dom/browser-element/BrowserElementParent.js b/dom/browser-element/BrowserElementParent.js
+--- a/dom/browser-element/BrowserElementParent.js
++++ b/dom/browser-element/BrowserElementParent.js
+@@ -341,16 +341,25 @@ BrowserElementParent.prototype = {
+ 
+   _setupMessageListener: function() {
+     this._mm = this._frameLoader.messageManager;
+     this._isWidget = this._frameLoader
+                          .QueryInterface(Ci.nsIFrameLoader)
+                          .ownerIsWidget;
+     this._mm.addMessageListener('browser-element-api:call', this);
+     this._mm.loadFrameScript("chrome://global/content/extensions.js", true);
++    this._mm.addMessageListener("Forms:ShowDropDown", this._showDropDown.bind(this));
++  },
++
++  _showDropDown: function(aMsg) {
++    if (!this._isAlive() || this._isWidget) {
++      return;
++    }
++
++    this._fireSelectMenuEvent(aMsg.data);
+   },
+ 
+   receiveMessage: function(aMsg) {
+     if (!this._isAlive()) {
+       return;
+     }
+ 
+     // Messages we receive are handed to functions which take a (data) argument,
+@@ -513,16 +522,31 @@ BrowserElementParent.prototype = {
+     if (!this._domRequestReady) {
+       // At least, one message listener such as for hello is registered.
+       // So we can use sendAsyncMessage now.
+       this._domRequestReady = true;
+       this._runPendingAPICall();
+     }
+   },
+ 
++  _fireSelectMenuEvent: function(data) {
++    let evt = this._createEvent('selectmenu', data, /* cancellable */ true);
++    var self = this;
++
++    Cu.exportFunction(function(index) {
++      self._mm.sendAsyncMessage('Forms:SelectDropDownItem', {value: index});
++    }, evt.detail, { defineAs: 'select' });
++
++    Cu.exportFunction(function(index) {
++      self._mm.sendAsyncMessage('Forms:DismissedDropDown', {});
++    }, evt.detail, { defineAs: 'close' });
++
++    return !this._frameElement.dispatchEvent(evt);
++  },
++
+   _fireCtxMenuEvent: function(data) {
+     let detail = data.json;
+     let evtName = detail.msg_name;
+ 
+     debug('fireCtxMenuEventFromMsg: ' + evtName + ' ' + detail);
+     let evt = this._createEvent(evtName, detail, /* cancellable */ true);
+ 
+     if (detail.contextmenu) {

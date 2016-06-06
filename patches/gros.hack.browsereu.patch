@@ -1,0 +1,46 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/caps/nsScriptSecurityManager.cpp b/caps/nsScriptSecurityManager.cpp
+--- a/caps/nsScriptSecurityManager.cpp
++++ b/caps/nsScriptSecurityManager.cpp
+@@ -66,16 +66,17 @@
+ #include "mozilla/StaticPtr.h"
+ #include "nsContentUtils.h"
+ #include "nsJSUtils.h"
+ #include "nsILoadInfo.h"
+ #include "nsXPCOMStrings.h"
+ 
+ // This should be probably defined on some other place... but I couldn't find it
+ #define WEBAPPS_PERM_NAME "webapps-manage"
++#define BROWSERAPI_PERM_NAME "browser"
+ 
+ using namespace mozilla;
+ using namespace mozilla::dom;
+ 
+ nsIIOService    *nsScriptSecurityManager::sIOService = nullptr;
+ nsIStringBundle *nsScriptSecurityManager::sStrBundle = nullptr;
+ JSRuntime       *nsScriptSecurityManager::sRuntime   = 0;
+ bool nsScriptSecurityManager::sStrictFileOriginPolicy = true;
+@@ -772,16 +773,22 @@ nsScriptSecurityManager::CheckLoadURIWit
+             if (!SecurityCompareURIs(sourceBaseURI, targetBaseURI) &&
+                 !nsContentUtils::IsExactSitePermAllow(aPrincipal, WEBAPPS_PERM_NAME)) {
+                 return NS_ERROR_DOM_BAD_URI;
+             }
+         }
+         return NS_OK;
+     }
+ 
++    bool allowedByBrowserAPI =
++      nsContentUtils::IsExactSitePermAllow(aPrincipal, BROWSERAPI_PERM_NAME);
++    if (allowedByBrowserAPI) {
++      return NS_OK;
++    }
++
+     // If the schemes don't match, the policy is specified by the protocol
+     // flags on the target URI.  Note that the order of policy checks here is
+     // very important!  We start from most restrictive and work our way down.
+     // Note that since we're working with the innermost URI, we can just use
+     // the methods that work on chains of nested URIs and they will only look
+     // at the flags for our one URI.
+ 
+     // Check for system target URI

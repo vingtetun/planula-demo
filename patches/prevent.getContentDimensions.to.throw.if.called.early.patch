@@ -1,0 +1,29 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/dom/browser-element/BrowserElementChildPreload.js b/dom/browser-element/BrowserElementChildPreload.js
+--- a/dom/browser-element/BrowserElementChildPreload.js
++++ b/dom/browser-element/BrowserElementChildPreload.js
+@@ -1119,16 +1119,23 @@ BrowserElementChild.prototype = {
+     });
+   },
+ 
+   _mozExitDomFullscreen: function(e) {
+     sendAsyncMsg("exit-dom-fullscreen");
+   },
+ 
+   _getContentDimensions: function() {
++    if (!content.document.body) {
++      return {
++        width: 0,
++        height: 0
++      }
++    }
++
+     return {
+       width: content.document.body.scrollWidth,
+       height: content.document.body.scrollHeight
+     }
+   },
+ 
+   /**
+    * Actually take a screenshot and foward the result up to our parent, given

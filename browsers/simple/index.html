@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <script>
+      addEventListener('load', function() {
+        let browser = document.getElementById('content');
+        let urlbar = document.getElementById('urlbar');
+
+        urlbar.addEventListener('change', function() {
+          browser.src = urlbar.value;
+        });
+  
+        browser.addEventListener('mozbrowserlocationchange', function(e) {
+          urlbar.value = e.detail;
+        });
+      });
+    </script>
+
+    <style>
+      html, body {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        font-size: 10px;
+      }
+
+      #chrome {
+        width: 100%;
+        height: 3rem;
+      }
+
+      #urlbar {
+        width: calc(100% - 3.2rem);
+        height: 100%;
+        border: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+
+      #reset {
+        width: 3.2rem;
+        height: 100%;
+        background-color: pink;
+      }
+
+      #content {
+        width: 100%;
+        height: calc(100% - 3rem);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="chrome">
+      <input type="text" id="urlbar"></input>
+      <a href="browserui://default">R<a>
+    </div>
+    <iframe id="content" mozbrowser src="http://google.fr"><iframe>
+  </body>
+</html>

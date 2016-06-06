@@ -1,0 +1,6 @@
+gros.hack.browsereu.patch
+fix_executeScript_with_systemPrincipal_for_mozbrowser.patch
+add.mozbrowserselectmenu.event.patch
+allow.places.to.be.configured.with.get.parameters.patch
+prevent.getContentDimensions.to.throw.if.called.early.patch
+browserui.protocolhandler.patch

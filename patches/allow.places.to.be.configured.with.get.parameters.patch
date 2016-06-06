@@ -1,0 +1,31 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/browser/components/places/content/places.js b/browser/components/places/content/places.js
+--- a/browser/components/places/content/places.js
++++ b/browser/components/places/content/places.js
+@@ -91,18 +91,24 @@ var PlacesOrganizer = {
+ 
+   init: function PO_init() {
+     ContentArea.init();
+ 
+     this._places = document.getElementById("placesList");
+     this._initFolderTree();
+ 
+     var leftPaneSelection = "AllBookmarks"; // default to all-bookmarks
+-    if (window.arguments && window.arguments[0])
++    if (window.arguments && window.arguments[0]) {
+       leftPaneSelection = window.arguments[0];
++    } else if (location.search) {
++      let searchParams = new URLSearchParams(location.search.substring(1));
++      if (searchParams.has("entrypoint")) {
++        leftPaneSelection = searchParams.get("entrypoint");
++      }
++    }
+ 
+     this.selectLeftPaneContainerByHierarchy(leftPaneSelection);
+     if (leftPaneSelection === "History") {
+       let historyNode = this._places.selectedNode;
+       if (historyNode.childCount > 0)
+         this._places.selectNode(historyNode.getChild(0));
+     }
+ 

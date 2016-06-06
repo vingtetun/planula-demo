@@ -1,0 +1,30 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/dom/browser-element/BrowserElementChildPreload.js b/dom/browser-element/BrowserElementChildPreload.js
+--- a/dom/browser-element/BrowserElementChildPreload.js
++++ b/dom/browser-element/BrowserElementChildPreload.js
+@@ -1121,17 +1121,23 @@ BrowserElementChild.prototype = {
+       }
+       let currentURI = docShell.QueryInterface(Ci.nsIWebNavigation).currentURI;
+       if (!currentURI.equalsExceptRef(expectedURI)) {
+         sendError("URL mismatches");
+         return;
+       }
+     }
+ 
+-    let sandbox = new Cu.Sandbox([content], {
++    let principal = content.document.nodePrincipal;
++    let isSystemPrincipal = Services.scriptSecurityManager.isSystemPrincipal(principal);
++    if (!isSystemPrincipal) {
++      principal = [principal];
++    }
++
++    let sandbox = new Cu.Sandbox(principal, {
+       sandboxPrototype: content,
+       sandboxName: "browser-api-execute-script",
+       allowWaivers: false,
+       sameZoneAs: content
+     });
+ 
+     try {
+       let sandboxRv = Cu.evalInSandbox(data.json.args.script, sandbox, "1.8");
