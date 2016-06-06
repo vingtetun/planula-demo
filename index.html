@@ -11,6 +11,10 @@
         background-color: white;
       }
 
+      h1 {
+        text-align: center;
+      }
+
       .browser-ui {
         width: 30%;
         height: 30%;
@@ -26,13 +30,31 @@
         border-style: dotted;
         opacity: 0.3;
       }
+
+      p {
+        text-align: center;
+      }
     </style>
   <head>
 
   <body>
-    <a class="browser-ui" href="browserui://gaiamobile.org/iot/browsers/simple/index.html"></a>
-    <a class="browser-ui" href="browserui://gaiamobile.org/iot/browsers/social/index.html"></a>
-    <a class="browser-ui" href="browserui://gaiamobile.org/iot/browsers/blue/index.html"></a>
+    <h1> Select a browser flavor </h1>
+    <a class="browser-ui" href="/browsers/simple/index.html"></a>
+    <a class="browser-ui" href="/browsers/social/index.html"></a>
+    <a class="browser-ui" href="/browsers/blue/index.html"></a>
     <a class="browser-ui undefined"></a>
+    <p>
+      The browser is going to reboot once selected. <br/>
+      You can revert back to default UI by clicking on "R" button.
+    </p>
+    <script>
+      let prefix = "browserui://" + location.host + location.pathname.replace(/\/(index.html)?/, "") ;
+      for (let link of document.querySelectorAll(".browser-ui")) {
+        let href = link.getAttribute("href");
+        if (href) {
+          link.href = prefix + href;
+        }
+      }
+    </script>
   </body>
 </html>
