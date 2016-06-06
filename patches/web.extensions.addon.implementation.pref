@@ -1,0 +1,28 @@
+0ec188b Allows contributors to implement ext-*.js files thanks to a development pref.
+diff --git a/toolkit/components/extensions/Extension.jsm b/toolkit/components/extensions/Extension.jsm
+index 45a27f5..10c38dd 100644
+--- a/toolkit/components/extensions/Extension.jsm
++++ b/toolkit/components/extensions/Extension.jsm
+@@ -134,6 +134,22 @@ var Management = {
+       return this.initialized;
+     }
+ 
++    // Firefox contributors can start prototyping ext-*.js files
++    // with bootstraped addons by setting a pref that delay
++    // WebExtensions startup only once all addons are loaded.
++    const ADDON_PREF = "extensions.webextensions.addon_implementation";
++    if (Preferences.get(ADDON_PREF, false) && !AddonManager.isReady) {
++      return new Promise(done => {
++        let listener = {
++          onStartup() {
++            done(Management.lazyInit());
++          }
++        };
++        AddonManager.addManagerListener(listener);
++      });
++    }
++
++
+     // Load order matters here. The base manifest defines types which are
+     // extended by other schemas, so needs to be loaded first.
+     let promise = Schemas.load(BASE_SCHEMA).then(() => {

@@ -1,0 +1,13 @@
+08b188f Register planula extensions folder.
+diff --git a/browser/extensions/moz.build b/browser/extensions/moz.build
+index 6a5e9dc..458d9d5 100644
+--- a/browser/extensions/moz.build
++++ b/browser/extensions/moz.build
+@@ -8,6 +8,7 @@ DIRS += [
+     'e10srollout',
+     'loop',
+     'pdfjs',
++    'planula',
+     'pocket',
+     'webcompat',
+ ]
