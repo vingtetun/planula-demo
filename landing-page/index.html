@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css">
+  <head>
+
+  <body>
+    <div id="header">
+      <a class="mozilla" href="http://mozilla.org"></a>
+      <a class="firefox" href="http://mozilla.org"></a>
+    </div>
+    <div id="content">
+      <header id="nightly-title"></header>
+      <div id="groups">
+        <div class="group">
+          <h3>Browsers</h3>
+          <ul>
+            <li><a class="browser-ui" href="/browsers/simple/">Simple</a></li>
+            <li><a class="browser-ui" href="/browsers/advanced/">Advanced</a></li>
+            <li><a class="browser-ui" href="/browsers/devtools/">Devtools</a></li>
+            <li><a class="browser-ui">Back to default Firefox</a></li>
+          </ul>
+        </div>
+        <div class="group">
+          <h3>Addons</h3>
+          <ul>
+            <li></li>
+          </ul>
+        </div>
+      </div>
+      <p>
+        The browser is going to reboot once selected. <br/>
+        You can revert back to default UI by clicking on "R" button.
+      </p>
+    </div>
+
+    <script>
+      let prefix = "browserui://" + location.host + location.pathname.replace(/\/landing-page\/?(index.html)?/, "") ;
+      for (let link of document.querySelectorAll(".browser-ui")) {
+        let href = link.getAttribute("href");
+        if (href) {
+          link.href = prefix + href;
+        } else {
+          link.href = "browserui://undefined";
+        }
+      }
+    </script>
+  </body>
+</html>

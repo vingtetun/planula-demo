@@ -52,6 +52,17 @@
         margin: 0;
       }
 
+      #navbar-extensions {
+        width: 12rem;
+        height: 100%;
+      }
+      button.extension-button {
+        height: 3rem;
+      }
+      button.extension-button img {
+        height: 2rem;
+      }
+
       #reset {
         width: 2rem;
         text-align: center;
@@ -61,12 +72,19 @@
       #content {
         flex-grow: 1;
       }
+
+      #devtools {
+        height: 200px;
+      }
     </style>
+    <script src="browser-actions.js" defer></script>
+    <script src="devtools.js" defer></script>
   </head>
 
   <body>
     <div id="chrome">
       <input type="text" id="urlbar"></input>
+      <div id="navbar-extensions"></div>
       <a id="reset" href="browserui://default">R</a>
     </div>
     <iframe id="content" mozbrowser></iframe>
