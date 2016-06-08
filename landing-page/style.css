@@ -83,6 +83,23 @@ body {
   color: white;
 }
 
+.group.addons li {
+  visibility: hidden;
+  border: 1px solid white;
+  padding: 20px;
+}
+
+.group.addons li.installed {
+  visibility: visible;
+}
+
+.group.addons li.enabled {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+.group.addons li.enabled.keep-installed {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
 p {
   clear: both;
   text-align: center;
