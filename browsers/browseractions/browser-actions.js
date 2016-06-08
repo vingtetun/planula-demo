@@ -24,7 +24,7 @@ channel.onmessage = function ({data}) {
       btn.addEventListener("click", onClick);
       btn.dataset.id = data.id;
       let extensionsbar = document.getElementById("navbar-extensions");
-      extensionsbar.appendChild(btn); 
+      extensionsbar.appendChild(btn);
       buttons.set(data.id, btn);
     } else {
       btn = buttons.get(data.id);

@@ -11,7 +11,7 @@
         urlbar.addEventListener('change', function() {
           browser.src = urlbar.value;
         });
-  
+
         browser.addEventListener('mozbrowserlocationchange', function(e) {
           urlbar.value = e.detail;
         });
@@ -72,13 +72,8 @@
       #content {
         flex-grow: 1;
       }
-
-      #devtools {
-        height: 200px;
-      }
     </style>
     <script src="browser-actions.js" defer></script>
-    <script src="devtools.js" defer></script>
   </head>
 
   <body>
