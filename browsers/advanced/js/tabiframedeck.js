@@ -30,6 +30,7 @@ define(['js/tabiframe', 'js/eventemitter', 'js/keybindings'],
     // thing (localStorage is bad).
     saveSession: function() {
       let session = _tabIframeArray.map(t => t.location);
+      session = session.filter(t => t.location && !t.location.startsWith("browserui://"));
       window.localStorage.session = JSON.stringify(session);
     },
 

@@ -43,14 +43,15 @@ define(function() {
       var case1Reg = /^(\?)|(\?.+\s)/;
       // for cases, pure string
       var case2Reg = /[\?\.\s\:]/;
-      // for cases, data:uri
-      var case3Reg = /^(data\:)/;
+      // for cases, non-http schemes
+      var case3Reg = /^(data|view-source|browserui\:)/;
       // for cases, only scheme but no domain provided
       var case4Reg = /^\w+\:\/*$/;
       var str = input.trim();
       if (case1Reg.test(str) || !case2Reg.test(str) || case4Reg.test(str)) {
         return true;
       }
+
       if (case3Reg.test(str)) {
         return false;
       }

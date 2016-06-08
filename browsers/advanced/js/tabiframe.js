@@ -25,16 +25,57 @@ define(['js/eventemitter'], function(EventEmitter) {
     'mozbrowserusernameandpasswordrequired'
   ];
 
+  // Non-Remote iframes may steal the focus :/
+  const INPROCESS_URLS = [
+       'about:addons'
+     , 'about:config'
+     , 'about:cache'
+     , 'about:crashes'
+     , 'about:debugging'
+     , 'about:devtools-toolbox'
+     , 'about:downloads'
+     , 'about:healthreport'
+     , 'about:networking'
+     , 'about:newtab'
+     , 'about:performance'
+     , 'about:plugins'
+     , 'about:preferences'
+     , 'about:sharing'
+     , 'about:support'
+     , 'about:telemetry'
+     , 'about:webrtc'
+  ];
+
   let tabIframeProto = Object.create(HTMLElement.prototype);
 
   tabIframeProto.setLocation = function(url) {
     if (!this._innerIframe) {
-      this._createInnerIframe();
+      let loadInParent = INPROCESS_URLS.includes(url) || url.startsWith("browserui://");
+      this._createInnerIframe(!loadInParent);
+    } else {
+      this.updateRemoteNess(url);
     }
+
     if (window.IS_PRIVILEGED) {
       this._innerIframe.src = url;
     } else {
       this._innerIframe.src = 'data:,' + url;
+    }
+  };
+
+  tabIframeProto.updateRemoteNess = function(url) {
+    // We may have to reload the location in a new iframe if the remoteness
+    // doesn't match.
+    let loadInParent = INPROCESS_URLS.includes(url) || url.startsWith("browserui://");
+    if ( (this._innerIframe.getAttribute("remote") && loadInParent) ||
+         (!this._innerIframe.getAttribute("remote") && !loadInParent ) ) {
+      this._innerIframe.remove();
+      this._createInnerIframe(!loadInParent);
+      if (window.IS_PRIVILEGED) {
+        this._innerIframe.src = url;
+      } else {
+        this._innerIframe.src = 'data:,' + url;
+      }
     }
   };
 
@@ -66,11 +107,13 @@ define(['js/eventemitter'], function(EventEmitter) {
     EventEmitter.decorate(this);
   };
 
-  tabIframeProto._createInnerIframe = function() {
+  tabIframeProto._createInnerIframe = function(remote) {
     let iframe = document.createElement('iframe');
     iframe.setAttribute('mozbrowser', 'true');
     iframe.setAttribute('flex', '1');
-    iframe.setAttribute('remote', 'true');
+    if (remote) {
+      iframe.setAttribute('remote', 'true');
+    }
     iframe.setAttribute('mozallowfullscreen', 'true');
     this.appendChild(iframe);
     for (let eventName of IFRAME_EVENTS) {
@@ -222,6 +265,7 @@ define(['js/eventemitter'], function(EventEmitter) {
       case 'mozbrowserlocationchange':
         this.userInput = '';
         this._location = e.detail;
+        this.updateRemoteNess(e.detail);
         break;
       case 'mozbrowsericonchange':
         this._favicon = e.detail.href;
