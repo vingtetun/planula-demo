@@ -94,6 +94,9 @@ BrowserAction.prototype = {
   },
   removeClickListener(listener) {
     this._listeners.delete(listener);
+  },
+  shutdown() {
+    WindowUtils.emit('browserAction', 'shutdown', this._data);
   }
 };
 
@@ -102,6 +105,12 @@ let onManifest = (type, directive, extension, manifest) => {
   browserActionMap.set(extension, browserAction);
 };
 extensions.on("manifest_browser_action", onManifest);
+extensions.on("shutdown", (type, extension) => {
+  if (browserActionMap.has(extension)) {
+    browserActionMap.get(extension).shutdown();
+    browserActionMap.delete(extension);
+  }
+});
 
 extensions.registerSchemaAPI("browserAction", null, (extension, context) => {
   function getProperty(property, value, tabIdOrDetails) {

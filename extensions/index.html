@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="prefetch" href="home-button/home-button.xpi">
+    <script>
+      let am = navigator.mozAddonManager;
+
+      let cache = {};
+      function getAddonByID(id) {
+        return new Promise(function(resolve, reject) {
+          if (cache[id]) {
+            resolve(cache[id]);
+          }
+
+          am.getAddonByID(id).then(
+            function success(addon) {
+              console.log('resolve....');
+              cache[id] = addon;
+              resolve(cache[id]);
+            },
+            function failure() {
+              console.log('fai...');
+              reject();
+            }
+          );
+        });
+      }
+
+      function install(url) {
+        am.createInstall({url}).then(
+          function success(installer) {
+            console.log(installer);
+
+            let events = [
+              "onDownloadStarted",
+              "onDownloadProgress",
+              "onDownloadEnded",
+              "onDownloadCancelled",
+              "onDownloadFailed",
+              "onInstallStarted",
+              "onInstallEnded",
+              "onInstallCancelled",
+              "onInstallFailed",
+            ];
+
+            events.forEach(function(name) {
+              installer.addEventListener(name, function() {
+                console.log(installer);
+              });
+            });
+
+            installer.install();
+
+            console.log('waiting for events now..\n');
+          },
+          function failure() {
+            console.log('Failed to createInstall for: ', url);
+          }
+        );
+      }
+
+      function uninstall(id) {
+        getAddonByID(id).then(
+          function succes(addon) {
+            addon.uninstall().then(
+              function success() {
+                console.log('success to call uninstall for :', id);
+              },
+              function failure() {
+                console.log('Fail to call uninstall for :', id);
+              }
+            );
+          },
+
+          function failure() {
+            console.log('Fail to call getAddonById for :', id);
+          }
+        );
+      }
+
+      function disable(id) {
+        getAddonByID(id).then(
+          function succes(addon) {
+            addon.disable().then(
+              function success() {
+                console.log('success to call disable for :', id);
+              },
+              function failure() {
+                console.log('Fail to call disable for :', id);
+              }
+            );
+          },
+
+          function failure() {
+            console.log('Fail to call getAddonById for :', id);
+          }
+        );
+      }
+
+      function enable(id) {
+        getAddonByID(id).then(
+          function succes(addon) {
+            addon.enable().then(
+              function success() {
+                console.log('success to call enable for :', id);
+              },
+              function failure() {
+                console.log('Fail to call enable for :', id);
+              }
+            );
+          },
+
+          function failure() {
+            console.log('Fail to call getAddonById for :', id);
+          }
+        );
+      }
+
+    </script>
+  </head>
+
+  <body>
+    <a onmouseover="enable('home-button@mozilla.org');" onmouseout="disable('home-button@mozilla.org');">Home</a>
+    <input type="button" value="Install" onclick="install('http://gaiamobile.org/iot/extensions/home-button/home-button.xpi');"></input>
+    <input type="button" value="Uninstall" onclick="uninstall('home-button@mozilla.org');"></input>
+    <input type="button" value="Enable" onclick="enable('home-button@mozilla.org');"></input>
+    <input type="button" value="Disable" onclick="disable('home-button@mozilla.org');"></input>
+  </body>
+</html>

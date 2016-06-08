@@ -1,0 +1,128 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/dom/webidl/AddonManager.webidl b/dom/webidl/AddonManager.webidl
+--- a/dom/webidl/AddonManager.webidl
++++ b/dom/webidl/AddonManager.webidl
+@@ -21,16 +21,18 @@ interface Addon {
+   // If the user has enabled this add-on, note that it still may not be running
+   // depending on whether enabling requires a restart or if the add-on is
+   // incompatible in some way.
+   readonly attribute boolean isEnabled;
+   // If the add-on is currently active in the browser.
+   readonly attribute boolean isActive;
+ 
+   Promise<boolean> uninstall();
++  Promise<boolean> disable();
++  Promise<boolean> enable();
+ };
+ 
+ [ChromeOnly, JSImplementation="dummy"]
+ interface AddonInstall : EventTarget {
+   // One of the STATE_* symbols from AddonManager.jsm
+   readonly attribute DOMString state;
+   // One of the ERROR_* symbols from AddonManager.jsm, or null
+   readonly attribute DOMString? error;
+diff --git a/toolkit/mozapps/extensions/AddonManager.jsm b/toolkit/mozapps/extensions/AddonManager.jsm
+--- a/toolkit/mozapps/extensions/AddonManager.jsm
++++ b/toolkit/mozapps/extensions/AddonManager.jsm
+@@ -2874,16 +2874,52 @@ var AddonManagerInternal = {
+           } catch (err) {
+             Cu.reportError(err);
+             resolve(false);
+           }
+         });
+       });
+     },
+ 
++    addonDisable(target, id) {
++      return new Promise(resolve => {
++        AddonManager.getAddonByID(id, addon => {
++          if (!addon) {
++            resolve(false);
++          }
++
++          try {
++            addon.userDisabled = true;
++            resolve(true);
++          } catch (err) {
++            Cu.reportError(err);
++            resolve(false);
++          }
++        });
++      });
++    },
++
++    addonEnable(target, id) {
++      return new Promise(resolve => {
++        AddonManager.getAddonByID(id, addon => {
++          if (!addon) {
++            resolve(false);
++          }
++
++          try {
++            addon.userDisabled = false;
++            resolve(true);
++          } catch (err) {
++            Cu.reportError(err);
++            resolve(false);
++          }
++        });
++      });
++    },
++
+     addonInstallDoInstall(target, id) {
+       let state = this.installs.get(id);
+       if (!state) {
+         return Promise.reject(`invalid id ${id}`);
+       }
+       return Promise.resolve(state.install.install());
+     },
+ 
+diff --git a/toolkit/mozapps/extensions/AddonManagerWebAPI.cpp b/toolkit/mozapps/extensions/AddonManagerWebAPI.cpp
+--- a/toolkit/mozapps/extensions/AddonManagerWebAPI.cpp
++++ b/toolkit/mozapps/extensions/AddonManagerWebAPI.cpp
+@@ -18,16 +18,18 @@
+ namespace mozilla {
+ using namespace mozilla::dom;
+ 
+ // Checks if the given uri is secure and matches one of the hosts allowed to
+ // access the API.
+ bool
+ AddonManagerWebAPI::IsValidSite(nsIURI* uri)
+ {
++  return true;
++
+   if (!uri) {
+     return false;
+   }
+ 
+   bool isSecure;
+   nsresult rv = uri->SchemeIs("https", &isSecure);
+   if (NS_FAILED(rv) || !isSecure) {
+     return false;
+diff --git a/toolkit/mozapps/extensions/amWebAPI.js b/toolkit/mozapps/extensions/amWebAPI.js
+--- a/toolkit/mozapps/extensions/amWebAPI.js
++++ b/toolkit/mozapps/extensions/amWebAPI.js
+@@ -146,16 +146,22 @@ function WebAPITask(generator) {
+     });
+   }
+ }
+ 
+ Addon.prototype = {
+   uninstall: WebAPITask(function*() {
+     return yield APIBroker.sendRequest("addonUninstall", this.id);
+   }),
++  disable: WebAPITask(function*() {
++    return yield APIBroker.sendRequest("addonDisable", this.id);
++  }),
++  enable: WebAPITask(function*() {
++    return yield APIBroker.sendRequest("addonEnable", this.id);
++  }),
+ };
+ 
+ const INSTALL_EVENTS = [
+   "onDownloadStarted",
+   "onDownloadProgress",
+   "onDownloadEnded",
+   "onDownloadCancelled",
+   "onDownloadFailed",

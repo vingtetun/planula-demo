@@ -10,8 +10,10 @@ channel.onmessage = function ({data}) {
       type: PopupHelper.Popup,
       anchor: btn
     });
-  }
-  else if (data.action == "update") {
+  } else if (data.action == "shutdown") {
+    let btn = buttons.get(data.options.id);
+    btn.remove();
+  } else if (data.action == "update") {
     data = data.options;
 
     let btn;

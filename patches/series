@@ -4,3 +4,9 @@ add.mozbrowserselectmenu.event.patch
 allow.places.to.be.configured.with.get.parameters.patch
 prevent.getContentDimensions.to.throw.if.called.early.patch
 browserui.protocolhandler.patch
+devtools.fixes.local.patch
+register.planula.extensions.pref
+web.extensions.addon.implementation.pref
+set.extensions.autoDisableScope.to.zero.patch
+add.enable.disable.methods.to.mozAddonManager.patch
+fix.permissions.removal.for.browserui.patch
