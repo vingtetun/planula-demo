@@ -136,7 +136,7 @@ define(['js/tabiframe', 'js/eventemitter', 'js/keybindings'],
       this.emit('select', {tabIframe});
 
       // Do the actual switch
-      window.mozRequestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
         if (previouslySelectTabIframe) {
           previouslySelectTabIframe.hide();
         }

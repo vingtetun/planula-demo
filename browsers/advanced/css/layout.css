@@ -34,7 +34,9 @@ html {
 body {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  /* XXX: planula, fix window size on startup */
+  width: 800px;
+  height: 600px;
 }
 
 tab-iframe, box, hbox, vbox, spacer {
