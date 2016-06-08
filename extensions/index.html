@@ -26,7 +26,8 @@
         });
       }
 
-      function install(url) {
+      function install(path) {
+        let url = new URL(path, location);
         am.createInstall({url}).then(
           function success(installer) {
             console.log(installer);
@@ -121,7 +122,7 @@
 
   <body>
     <a onmouseover="enable('home-button@mozilla.org');" onmouseout="disable('home-button@mozilla.org');">Home</a>
-    <input type="button" value="Install" onclick="install('http://gaiamobile.org/iot/extensions/home-button/home-button.xpi');"></input>
+    <input type="button" value="Install" onclick="install('home-button/home-button.xpi');"></input>
     <input type="button" value="Uninstall" onclick="uninstall('home-button@mozilla.org');"></input>
     <input type="button" value="Enable" onclick="enable('home-button@mozilla.org');"></input>
     <input type="button" value="Disable" onclick="disable('home-button@mozilla.org');"></input>

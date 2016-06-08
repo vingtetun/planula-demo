@@ -36,11 +36,12 @@
     </div>
 
     <script>
-      let prefix = "browserui://" + location.host + location.pathname.replace(/\/landing-page\/?(index.html)?/, "") ;
       for (let link of document.querySelectorAll(".browser-ui")) {
-        let href = link.getAttribute("href");
-        if (href) {
-          link.href = prefix + href;
+        let path = link.getAttribute("href");
+        if (path) {
+          let url = new URL(path, location);
+          url.protocol = "browserui";
+          link.href = url.href;
         } else {
           link.href = "browserui://undefined";
         }
