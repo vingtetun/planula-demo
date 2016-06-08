@@ -14,6 +14,25 @@ const Ci = Components.interfaces;
   Components.manager.addBootstrappedManifestLocation(manifest);
 })();
 
+function waitForWindow() {
+  let window = Services.wm
+                       .getMostRecentWindow(null);
+  if (window) {
+    return Promise.resolve(window);
+  }
+  return new Promise(done => {
+    Services.wm.addListener({
+      onOpenWindow: function(aXULWindow) {
+        Services.wm.removeListener(this);
+        // We have to wait for a tick for getMostRecentWindow to return the window
+        Services.tm.mainThread.dispatch(function() {
+          done(waitForWindow());
+        }, Components.interfaces.nsIThread.DISPATCH_NORMAL);
+      }
+    });
+  });
+}
+
 function startup() {
   Cu.import("resource://gre/modules/ExtensionManagement.jsm");
   ExtensionManagement.registerScript("resource://webextensions/utils.js");
@@ -23,14 +42,11 @@ function startup() {
   // in testing/marionette/driver.js
   // Note that it also starts devtools.
   Cu.import("resource://webextensions/glue.jsm");
-  // No idea why but WindowUtils.getWindow() only resolves if we wait for a 1s
-  // before calling it :/
-  let {setTimeout} = Cu.import("resource://gre/modules/Timer.jsm", {});
-  setTimeout(function () {
-    WindowUtils.getWindow().then(function (window) {
-      Services.obs.notifyObservers(window, "browser-delayed-startup-finished", null);
-    });
-  }, 1000);
+  // We wait for the window to be opened to register the devtools and especially
+  // its about:devtools-toolbox URI.
+  waitForWindow().then(window => {
+    Services.obs.notifyObservers(window, "browser-delayed-startup-finished", null);
+  });
 }
 
 function install() {
