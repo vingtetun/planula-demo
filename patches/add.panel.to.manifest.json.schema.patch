@@ -1,0 +1,30 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/browser/components/extensions/schemas/browser_action.json b/browser/components/extensions/schemas/browser_action.json
+--- a/browser/components/extensions/schemas/browser_action.json
++++ b/browser/components/extensions/schemas/browser_action.json
+@@ -23,16 +23,24 @@
+                 "optional": true
+               },
+               "default_popup": {
+                 "type": "string",
+                 "format": "relativeUrl",
+                 "optional": true,
+                 "preprocess": "localize"
+               },
++              "default_panel": {
++                "type": "string",
++                "optional": true
++              },
++              "default_orientation": {
++                "type": "string",
++                "optional": true
++              },
+               "browser_style": {
+                 "type": "boolean",
+                 "optional": true
+               }
+             },
+             "optional": true
+           }
+         }

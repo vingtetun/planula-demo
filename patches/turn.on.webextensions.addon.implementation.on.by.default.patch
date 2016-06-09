@@ -1,0 +1,16 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
+--- a/browser/app/profile/firefox.js
++++ b/browser/app/profile/firefox.js
+@@ -1407,8 +1407,10 @@ pref("media.webspeech.synth.enabled", tr
+ pref("browser.esedbreader.loglevel", "Error");
+ 
+ pref("browser.laterrun.enabled", false);
+ 
+ // Enable browser frames for use on desktop.  Only exposed to chrome callers.
+ pref("dom.mozBrowserFramesEnabled", true);
+ 
+ pref("extensions.pocket.enabled", true);
++
++pref("extensions.webextensions.addon_implementation", true);
