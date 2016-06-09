@@ -10,7 +10,7 @@
  *
  */
 
-require([], function() {
+require(['js/popups/popuphelper'], function(PopupHelper) {
 
   'use strict';
   let buttons = new Map();
@@ -34,6 +34,10 @@ require([], function() {
         updateTitle(options);
         updateBadge(options);
         updateIcon(options);
+        break;
+
+      case 'openPopup':
+        openPopup(options);
         break;
 
       default:
@@ -97,4 +101,14 @@ require([], function() {
     }
   }
 
+  function openPopup(options) {
+    let button = buttons.get(options.id);
+    let rect = button.getBoundingClientRect();
+    PopupHelper.openPopup({
+      id: 'toolbar-popup',
+      url: options.url,
+      autofocus: true,
+      anchor: { x: rect.x, y: rect.y + 29, width: rect.width, height: rect.height }
+    });
+  }
 });

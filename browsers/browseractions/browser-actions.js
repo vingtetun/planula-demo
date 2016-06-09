@@ -22,6 +22,10 @@ channel.onmessage = function ({data}) {
       updateIcon(options);
       break;
 
+    case 'openPopup':
+      openPopup(options);
+      break;
+
     default:
       throw new Error(data.action + ' is not implemented.');
       break;
@@ -81,5 +85,9 @@ function updateIcon(options) {
   } else {
     button.innerHTMl = '';
   }
+}
+
+function openPopup(options) {
+  let button = buttons.get(options.id);
 }
 
