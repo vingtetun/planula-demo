@@ -53,6 +53,8 @@ function BrowserAction(options, extension) {
     badgeBackgroundColor: null,
     icon: normalize(options.default_icon, extension),
     popup: popup,
+    panel: options.default_panel || "",
+    orientation: options.default_orientation || "",
   };
   this._data = this._defaults;
   this._build();
@@ -64,7 +66,7 @@ BrowserAction.prototype = {
     this._update(this._data);
     WindowUtils.on('browserAction', "click", this.onClick.bind(this));
   },
-  onClick({buttonId}) {
+  onClick(action, {buttonId}) {
     if (buttonId != this._data.id) {
       return;
     }
@@ -111,6 +113,13 @@ extensions.on("shutdown", (type, extension) => {
     browserActionMap.delete(extension);
   }
 });
+
+Services.obs.addObserver(function(subject, topic, data) {
+  for (let key of browserActionMap.keys()) {
+    let browserAction = browserActionMap.get(key);
+    browserAction._update(browserAction._data);
+  }
+}, 'new-chrome-loaded', false);
 
 extensions.registerSchemaAPI("browserAction", null, (extension, context) => {
   function getProperty(property, value, tabIdOrDetails) {

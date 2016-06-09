@@ -10,3 +10,6 @@ web.extensions.addon.implementation.pref
 set.extensions.autoDisableScope.to.zero.patch
 add.enable.disable.methods.to.mozAddonManager.patch
 fix.permissions.removal.for.browserui.patch
+make.it.restartless.because.it.looks.cool.patch
+turn.on.webextensions.addon.implementation.on.by.default.patch
+add.panel.to.manifest.json.schema.patch

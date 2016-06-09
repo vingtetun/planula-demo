@@ -1,5 +1,6 @@
 
 Components.utils.import('resource://gre/modules/Services.jsm');
+let {setTimeout} = Components.utils.import("resource://gre/modules/Timer.jsm", {});
 
 var EXPORTED_SYMBOLS = ['WindowUtils'];
 
@@ -14,7 +15,7 @@ var WindowUtils = {
     this.getChannel(name).then(channel => {
       channel.addEventListener("message", function ({data}) {
         if (data.event == action) {
-          callback(action, data.args);
+          callback(action, data);
         }
       });
     });

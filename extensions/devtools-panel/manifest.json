@@ -1,12 +1,12 @@
 {
   "description": "implements the home button",
   "manifest_version": 2,
-  "name": "home-button",
+  "name": "devtools-panel",
   "version": "1.0",
 
   "applications": {
     "gecko": {
-      "id": "home-button@mozilla.org"
+      "id": "devtools-panel@mozilla.org"
     }
   },
 
@@ -14,12 +14,9 @@
     "tabs"
   ],
 
-  "background": {
-    "scripts": ["background.js"]
-  },
-  
   "browser_action": {
-    "default_icon": "home.png",
-    "default_title": "Go home"
+    "default_icon": "devtools.png",
+    "default_panel": "about:devtools-toolbox?target",
+    "default_orientation": "bottom"
   }
 }

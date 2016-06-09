@@ -1,61 +1,85 @@
+
 let buttons = new Map();
-
-let channel = new BroadcastChannel("browserAction");
+let channel = new BroadcastChannel('browserAction');
 channel.onmessage = function ({data}) {
-  if (data.action == "openPopup") {
-    let { id, popup } = data.options;
-    let btn = buttons.get(id);
-    PopupHelper.open({
-      url: popup,
-      type: PopupHelper.Popup,
-      anchor: btn
-    });
-  } else if (data.action == "shutdown") {
-    let btn = buttons.get(data.options.id);
-    btn.remove();
-  } else if (data.action == "update") {
-    data = data.options;
+  let options = data.options;
+  let button = buttons.get(options.id);
 
-    let btn;
-    if (!buttons.has(data.id)) {
-      // Create the bare DOM
-      btn = document.createElement("button");
-      btn.className = "extension-button";
-      btn.addEventListener("click", onClick);
-      btn.dataset.id = data.id;
-      let extensionsbar = document.getElementById("navbar-extensions");
-      extensionsbar.appendChild(btn);
-      buttons.set(data.id, btn);
-    } else {
-      btn = buttons.get(data.id);
-    }
+  switch (data.action) {
+    case 'shutdown':
+      button && button.remove();
+      break;
 
-    // Update its state
-    btn.setAttribute("title", data.title || "");
-    let badge = btn.querySelector(".button-badge");
-    if (data.badgeText) {
-      if (!badge) {
-        let badge = btn.ownerDocument.createElement("div");
-        badge.className = "button-badge";
-        badge.setAttribute("style", "position: absolute; bottom: 0; right: 0px; border: 1px solid black; border-radius: 5px;");
-        btn.appendChild(badge);
+    case 'update':
+      if (!button) {
+        button = createButton(options);
+        buttons.set(options.id, button);
       }
-      badge.textContent = this.data.badgeText;
-      badge.style.backgroundColor = this.badgeBackgroundColor || "#e0e0e0";
-    } else {
-      if (badge) {
-        badge.remove();
-      }
-    }
-    if (data.icon) {
-      btn.innerHTML = "<img src='"+data.icon[Object.keys(data.icon)[0]]+"' />";
-    } else {
-      btn.innerHTMl = "";
-    }
+    
+      updateTitle(options);
+      updateBadge(options);
+      updateIcon(options);
+      break;
+
+    default:
+      throw new Error(data.action + ' is not implemented.');
+      break;
   }
 };
 
-function onClick(event) {
-  let id = event.target.dataset.id;
-  channel.postMessage({ event: "click", args: { buttonId: id } });
+
+function createButton(options) {
+  let element = document.createElement('button');
+  element.className = 'extension-button';
+  element.addEventListener("click", function() {
+    if (options.panel) {
+      Panels.toggle(options);
+    } else {
+      channel.postMessage({ event: 'click', buttonId: options.id });
+    }
+  });
+
+  let container = document.getElementById('navbar-extensions');
+  container.appendChild(element); 
+  return element;
 }
+
+function updateTitle(options) {
+  let button = buttons.get(options.id);
+  button.setAttribute('title', options.title || '');
+}
+
+function updateBadge(options) {
+  let button = buttons.get(options.id);
+
+  let badge = button.querySelector('.button-badge');
+  if (!options.badgeText && !badge) {
+    return;
+  }
+
+  if (!options.badgeText && badge) {
+    badge.remove();
+    return;
+  }
+
+  if (options.badgeText && !badge) {
+    let badge = document.createElement('div');
+    badge.className = 'button-badge';
+    badge.setAttribute('style', 'position: absolute; bottom: 0; right: 0px; border: 1px solid black; border-radius: 5px;');
+    button.appendChild(badge);
+  }
+
+  badge.textContent = options.badgeText;
+  badge.style.backgroundColor = options.badgeBackgroundColor || '#e0e0e0';
+}
+
+function updateIcon(options) {
+  let button = buttons.get(options.id);
+
+  if (options.icon) {
+    button.innerHTML = '<img src="' + options.icon[Object.keys(options.icon)[0]] + '" />';
+  } else {
+    button.innerHTMl = '';
+  }
+}
+

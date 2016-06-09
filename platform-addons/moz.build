@@ -1,4 +1,3 @@
 DIRS = [
-  'test-addon',
   'web-extension-html'
 ]
