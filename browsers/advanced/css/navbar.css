@@ -158,3 +158,12 @@
     background-image: url(images/shared/identity-icons-https-ev@2x.png);
   }
 }
+
+.browser-actions {
+}
+button.extension-button {
+  height: 18px;
+}
+button.extension-button img {
+  height: 15px;
+}

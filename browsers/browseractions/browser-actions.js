@@ -1,5 +1,6 @@
 
 let buttons = new Map();
+let container = document.getElementById('navbar-extensions');
 let channel = new BroadcastChannel('browserAction');
 channel.onmessage = function ({data}) {
   let options = data.options;
@@ -39,7 +40,6 @@ function createButton(options) {
     }
   });
 
-  let container = document.getElementById('navbar-extensions');
   container.appendChild(element); 
   return element;
 }

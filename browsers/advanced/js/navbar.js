@@ -11,8 +11,8 @@
  *
  */
 
-require(['js/urlhelper', 'js/tabiframedeck', 'js/keybindings'],
-function(UrlHelper, TabIframeDeck, RegisterKeyBindings) {
+require(['js/urlhelper', 'js/tabiframedeck', 'js/keybindings', 'js/browseractions'],
+function(UrlHelper, TabIframeDeck, RegisterKeyBindings, BrowserActions) {
 
   'use strict';
 
@@ -36,6 +36,7 @@ function(UrlHelper, TabIframeDeck, RegisterKeyBindings) {
         <div class='searchselector'></div>
         <input placeholder='Yahoo' class='searchinput' flex='1'>
       </hbox>
+      <hbox class='browser-actions' />
       <button class='menu-button'></button>
     </hbox>
   `;
