@@ -1,0 +1,171 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+body {
+   background-color: #2d9cdb;
+   background-image: url(images/tofino/chrome-background.png);
+}
+.searchbar, .menu-button {
+  display:none;
+}
+.navbar {
+  background: transparent;
+}
+.tabstrip {
+  background: rgba(47,128,237,0.5);
+}
+.urlbar {
+  background: rgba(255,255,255,0.25);
+  border: 2px solid rgba(255,255,255,0.75);
+  border-radius: 0;
+  box-shadow: none !important;
+}
+
+button.back-button {
+    background-color: transparent;
+    border: 2px solid white;
+    border-radius: 150px;
+    height: 35px !important;
+    margin-right: 4px;
+    width: 35px !important;
+    min-width: 22px;
+    min-height: 22px;
+    background-image: url("images/tofino/glyph-arrow-nav-back-16.svg");
+    background-size: 22px 22px;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+button.back-button:hover {
+    opacity: 1;
+    background-position: left center;
+}
+button.back-button.disabled {
+    opacity: 0.5;
+    display: block;
+}
+
+button.forward-button {
+    min-width: 22px;
+    min-height: 22px;
+    background-image: url("images/tofino/glyph-arrow-nav-forward-16.svg") !important;
+    background-size: 22px 22px !important;
+    background-position: left center !important;
+    background-repeat: no-repeat !important;
+}
+button.forward-button:hover {
+    opacity: 1;
+    background-position: left center;
+}
+button.forward-button.disabled {
+    opacity: 0.5;
+    display: block;
+}
+button.reload-button {
+    margin-left: 10px;
+    min-width: 22px;
+    min-height: 22px;
+    background-image: url("images/tofino/glyph-arrow-reload-16.svg");
+    background-size: 22px 22px;
+    background-position: left center;
+    background-repeat: no-repeat; 
+}
+
+.tabstrip {
+  padding: 0 28px 0 10px;
+  margin-bottom: calc(-1 * var(--hwd-pixel));
+  z-index: 999;
+}
+
+[os="osx"] .tabstrip:first-of-type {
+  padding-top: 9px;
+}
+
+.tab {
+  opacity: 0.5;
+  -moz-user-select: none;
+  cursor: default;
+  color: white;
+  padding: 8px 0 8px 5px;
+  flex-basis: 280px;
+  border-color: rgba(255,255,255,0.75);
+  border-left: 1px solid;
+  border-right: 1px solid;
+
+}
+
+.tab:not(.selected):hover {
+  opacity: 1;
+}
+
+.tab.selected {
+  opacity: 1;
+  background: rgba(255,255,255,0.1);
+}
+
+/****/
+
+.tab > .favicon, .tab > .throbber {
+  width: 16px;
+  height: 16px;
+  image-rendering: optimizequality;
+  margin-right: 5px;
+}
+
+.tab > .favicon:not([src]) {
+  display: none;
+}
+
+.tab > .throbber {
+  background-image: url(images/shared/loading.png);
+  background-size: 16px 16px;
+}
+
+@media (min-resolution: 2dppx) {
+  .tab > .throbber {
+    background-image: url(images/shared/loading@2x.png);
+  }
+}
+
+.tab.loading > .favicon,
+.tab:not(.loading) > .throbber {
+  display: none;
+}
+
+.tab > .title {
+  flex-grow: 1;
+  display: inline-block;
+  width: 0;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  z-index: 1000;
+  opacity: 0.7;
+  font: -moz-field;
+  font-size: 12px;
+  outline: none;
+}
+
+.tab.selected > .title {
+  opacity: 1;
+}
+
+.tab > .close-button {
+  width: 16px;
+  height: 16px;
+  background-color: transparent;
+  background-image: url(images/shared/close.png);
+  background-size: 64px 16px;;
+  margin-right: 2px;
+}
+
+.tab.selected > .close-button {
+  background-position: 0 0;
+}
+
+.tab > .close-button:hover {
+  background-position: -16px 0;
+}
+
+.tab > .close-button:hover:active {
+  background-position: -32px 0;
+}

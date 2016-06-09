@@ -41,8 +41,11 @@ require(['js/tabiframedeck'], function(TabIframeDeck) {
     document.title = 'Firefox - ' + tabIframe.title;
   });
 
+  // Load custom tab strip via url query parameter
+  let url = new URL(location);
+  let tabsui = url.searchParams.get('tabsui') || 'tabstrip';
   require([
-    'js/tabstrip',
+    'js/' + tabsui,
     'js/navbar',
   ]);
 })
