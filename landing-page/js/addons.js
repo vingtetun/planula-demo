@@ -1,5 +1,6 @@
 addEventListener("load", function () {
   preloadAddons();
+
   let group = document.querySelector(".group.addons");
   group.addEventListener("click", function(event) {
     let { id, path } = event.target.dataset;
@@ -32,10 +33,11 @@ addEventListener("load", function () {
 
 function preloadAddons() {
   for(let addon of document.querySelectorAll(".group.addons li")) {
+    let extension = addon;
     let { id, path } = addon.dataset;
     install(path).then(() => {
       disable(id);
-      addon.classList.add("installed");
+      extension.classList.add("installed");
     });
   }
 }
