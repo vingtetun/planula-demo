@@ -31,6 +31,7 @@ const Panels = (function() {
       return;
     }
 
+    panels.delete(options.id);
     panel.remove();
   }
 
