@@ -20,7 +20,7 @@ body {
   height: 70px;
   width: 183px;
   position: relative;
-  top: 10px;
+  top: 5px;
 }
 #header > a.mozilla {
   background: url(img/nightly-title.png) 100% 0 no-repeat;
@@ -36,15 +36,6 @@ body {
   min-height: 500px;
   text-shadow: #000 1px 1px 1px;
   text-align: left;
-}
-
-#nightly-title {
-  background: url(img/nightly-header-bg.png) -55px -80px no-repeat;
-  display: block;
-  height: 95px;
-  margin: 0 auto;
-  padding-bottom: 100px;
-  width: 970px;
 }
 
 #groups {
@@ -63,21 +54,22 @@ body {
   padding: 20px 30px;
 }
 .group ul {
-  padding-bottom: 20px;
   width: 625px;
   background: rgba(133, 156, 228, .1);
   border: 1px solid #1b335b;
   box-shadow: inset 1px 1px 8px 1px #1b335b;
   float: left;
   font: normal 20px 'MuseoSans500', sans-serif;
-  padding: 20px 30px;
+  padding: 10px 0;
+  margin: 0;
+  margin-top: 20px;
 }
 .group li {
   border-bottom: 1px dotted #24375b;
   min-height: 40px;
   list-style: none;
-  margin: 0 0 15px;
-  padding-bottom: 15px;
+  padding-left: 30px;
+  padding-top: 10px;
 }
 .group li a {
   color: white;
@@ -85,8 +77,9 @@ body {
 
 .group.addons li {
   visibility: hidden;
-  border: 1px solid white;
-  padding: 20px;
+  border: 1px solid gray;
+  box-shadow: inset 1px 1px 8px 1px #1b335b;
+  margin: 10px;
 }
 
 .group.addons li.installed {
