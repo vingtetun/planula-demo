@@ -1,0 +1,23 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/browser/components/BrowserUIProtocolHandler.js b/browser/components/BrowserUIProtocolHandler.js
+--- a/browser/components/BrowserUIProtocolHandler.js
++++ b/browser/components/BrowserUIProtocolHandler.js
+@@ -129,16 +129,17 @@ const Preferences = (function() {
+   }
+ })();
+ 
+ function restart(uri) {
+   //Cc["@mozilla.org/toolkit/app-startup;1"]
+   //  .getService(Ci.nsIAppStartup)
+   //  .quit(Ci.nsIAppStartup.eForceQuit | Ci.nsIAppStartup.eRestart);
+   Services.ww.activeWindow.document.location = uri.spec;
++  Services.prefs.savePrefFile(null); 
+ }
+ 
+ 
+ 
+ /*
+  * BrowserUIHandler
+  */
+ function BrowserUIHandler() {
