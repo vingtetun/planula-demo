@@ -19,7 +19,7 @@ define(['js/tabiframe', 'js/eventemitter', 'js/keybindings'],
 
   'use strict';
 
-  const HOMEPAGE = '/landing-page/';
+  const HOMEPAGE = '../../landing-page/';
 
   let _tabIframeArray = [];
   let _selectIndex = -1;
