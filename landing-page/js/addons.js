@@ -12,6 +12,7 @@ addEventListener("load", function () {
     }
     event.target.classList.toggle("keep-installed");
   });
+
   group.addEventListener("mouseover", function(event) {
     let { id, path } = event.target.dataset;
     if (!id) return;
@@ -19,6 +20,7 @@ addEventListener("load", function () {
       event.target.classList.add("enabled");
     });
   });
+
   group.addEventListener("mouseout", function(event) {
     let { id, path } = event.target.dataset;
     if (!id) return;
@@ -35,8 +37,7 @@ function preloadAddons() {
   for(let addon of document.querySelectorAll(".group.addons li")) {
     let extension = addon;
     let { id, path } = addon.dataset;
-    install(path).then(() => {
-      disable(id);
+    maybeInstall(path, id).then(() => {
       extension.classList.add("installed");
     });
   }
@@ -45,6 +46,24 @@ function preloadAddons() {
 let am = navigator.mozAddonManager;
 
 let cache = {};
+
+function maybeInstall(path, id) {
+  return new Promise(function(resolve, reject) {
+    am.getAddonByID(id).then(
+     function(addon) {
+        if (addon) {
+          resolve();
+        } else {
+          install(path).then(() => {
+            disable(id);
+            resolve();
+          });
+        }
+      }
+    );
+  });
+}
+
 function getAddonByID(id) {
   return new Promise(function(resolve, reject) {
     if (cache[id]) {
@@ -53,12 +72,15 @@ function getAddonByID(id) {
 
     am.getAddonByID(id).then(
       function success(addon) {
-        console.log('resolve....');
+        if (!addon) {
+          resolve(null);
+          return;
+        }
+
         cache[id] = addon;
         resolve(cache[id]);
       },
       function failure() {
-        console.log('fail...');
         reject();
       }
     );
@@ -70,7 +92,6 @@ function install(path) {
     let url = new URL(path, location);
     am.createInstall({url}).then(
       function success(installer) {
-        console.log(installer);
 
         let events = [
           "onDownloadStarted",
@@ -87,13 +108,10 @@ function install(path) {
         events.forEach(function(name) {
           installer.addEventListener(name, function() {
             if (name == "onInstallEnded") done();
-            console.log(installer);
           });
         });
 
         installer.install();
-
-        console.log('waiting for events now..\n');
       },
       function failure() {
         console.log('Failed to createInstall for: ', url);
