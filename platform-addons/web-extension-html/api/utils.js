@@ -1,6 +1,56 @@
 
 dump('Utils\n');
 
+let TabsState = {
+  fields: [
+    "index",
+    "windowId",
+    "selected",
+    "highlighted",
+    "active",
+    "pinned",
+    "status",
+    "incognito",
+    "width",
+    "height",
+    "audible",
+    "mutedInfo",
+    "url",
+    "title",
+    "favIconUrl",
+  ],
+
+  tabs: new Map(),
+
+  onEvent(event, data) {
+    // Convert id to string as TabManager.getId returns a string.
+    let id = String(data.id);
+    let tab = this.tabs.get(id);
+    dump(" + TabState event: "+event+" for id:"+id+"\n");
+    if (!tab) {
+      tab = { id };
+      this.tabs.set(id, tab);
+    }
+    for(let name of this.fields) {
+      if (!(name in data)) {
+        continue;
+      }
+      tab[name] = data[name];
+    }
+  },
+
+  getTab(frame) {
+    let id = TabManager.getId(frame);
+    let tab = this.tabs.get(id);
+    if (!tab) {
+      throw new Error("Missing state for tab id=" + id);
+    }
+    return tab;
+  }
+};
+
+WindowUtils.on("tabs", "update", TabsState.onEvent.bind(TabsState));
+
 // Manages tab mappings and permissions for a specific extension.
 function ExtensionTabManager(extension) {
   this.extension = extension;
@@ -43,39 +93,19 @@ ExtensionTabManager.prototype = {
     return this.extension.hasPermission("tabs") || this.hasActiveTabPermission(tab);
   },
 
-  convert(tab) {
-    let window = tab.ownerDocument.defaultView;
+  convert(frame) {
+    let tab = TabsState.getTab(frame);
+    // Clone the object so that the callsite can alter its own copy
+    // but also to allow us to remove fields requiring special perms
+    tab = JSON.parse(JSON.stringify(tab));
 
-    let result = {
-      id: TabManager.getId(tab),
-      index: tab._tPos,
-      windowId: WindowManager.getId(window),
-      selected: tab.selected,
-      highlighted: tab.selected,
-      active: tab.selected,
-      pinned: tab.pinned,
-      status: TabManager.getStatus(tab),
-      incognito: false, //PrivateBrowsingUtils.isBrowserPrivate(tab.linkedBrowser),
-      width: tab.clientWidth,
-      height: tab.clientHeight,
-    };
-
-    if (this.hasTabPermission(tab)) {
-      // Don't know how to get current location on <iframe mozbrowser>?
-      result.url = tab.parentNode.wrappedJSObject.location;
-      //dump("convertTab, location:"+result.url+"\n");
-      /*
-      if (tab.linkedBrowser.contentTitle) {
-        result.title = tab.linkedBrowser.contentTitle;
-      }
-      let icon = window.gBrowser.getIcon(tab);
-      if (icon) {
-        result.favIconUrl = icon;
-      }
-      */
+    if (!this.hasTabPermission(tab)) {
+      delete tab.url;
+      delete tab.title;
+      delete tab.favIconUrl;
     }
 
-    return result;
+    return tab;
   },
 
   getTabs(window) {
@@ -84,23 +114,18 @@ ExtensionTabManager.prototype = {
 };
 
 
-let idCount = 1;
-const uuidMap = new Map();
-// TODO: Use a map of tabs to prevent iterating over frames()
-
 // Overrides TabManager defined in browser/components/extensions/ext-utils.js
 // in order to support generic HTML browser
 global.TabManager = {
   _tabs: new WeakMap(),
-  _nextId: 1,
 
   frames() {
     let frames = function (window) {
       let list = [...window.document.querySelectorAll("iframe")];
       for(let frame of list) {
-        // XXX: Only consider frames with uuid attributes
+        // XXX: Only consider frames with data-tab-id attributes
         // /!\ makes assumptions on the HTML
-        if (frame.getAttribute("uuid")) {
+        if (frame.getAttribute("data-tab-id")) {
           yield frame;
         }
         if (frame.contentWindow) {
@@ -117,22 +142,12 @@ global.TabManager = {
     }
   },
 
-  getIdForUUID(uuid) {
-    let id = uuidMap.get(uuid);
-    if (!id) {
-      id = idCount++;
-      uuidMap.set(uuid, id);
-    }
-    //dump(uuid+" maps to "+id+"\n");
-    return id;
-  },
-
   getId(tab) {
-    let uuid = tab.getAttribute("uuid");
-    if (!uuid) {
-      throw new Error("tab without uuid attribute");
+    let id = tab.getAttribute("data-tab-id");
+    if (!id) {
+      throw new Error("tab without data-tab-id attribute");
     }
-    return this.getIdForUUID(uuid);
+    return id;
   },
 
   getBrowserId(browser) {
@@ -145,6 +160,7 @@ global.TabManager = {
         return frame;
       }
     }
+    throw new Error("Unable to find tab with id=" + tabId+"\n");
     return null;
   },
 

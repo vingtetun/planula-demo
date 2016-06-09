@@ -132,15 +132,10 @@ extensions.registerSchemaAPI("browserAction", null, (extension, context) => {
                 tabIdOrDetails.tabId : tabIdOrDetails;
     browserActionMap.get(extension).setProperty(property, value, tabId);
   }
-  let currentTab;
-  let onTabSelect = function ({uuid, url, title}) {
-    currentTab = TabManager.getIdForUUID(uuid);
-  }
-  WindowUtils.on("tabs", "select", onTabSelect);
   let browserAction = {
     onClicked: new EventManager(context, "browserAction.onClicked", fire => {
       let listener = () => {
-        fire(TabManager.convert(extension, TabManager.getTab(currentTab)));
+        fire(TabManager.convert(extension, TabManager.activeTab));
       };
       browserActionMap.get(extension).addClickListener(listener);
       return () => {

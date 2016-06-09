@@ -35,7 +35,7 @@ extensions.on("page-load", (type, page, params, sender, delegate) => {
     //let parentWindow = browser.ownerDocument.defaultView;
     //page.windowId = WindowManager.getId(parentWindow);
 
-    if (params.type == "tab" && browser.getAttribute("uuid")) {
+    if (params.type == "tab" && browser.getAttribute("data-tab-id")) {
       page.tabId = sender.tabId = TabManager.getId(browser);
     }
 
@@ -46,21 +46,17 @@ extensions.on("page-load", (type, page, params, sender, delegate) => {
 });
 
 let tabSelectListeners = new Set();
-function onTabSelect({uuid}) {
-  let tabId = TabManager.getIdForUUID(uuid);
-  dump("Tabs.select uuid="+uuid+" id="+tabId+"\n");
+function onTabSelect(event, {id}) {
   tabSelectListeners.forEach(f => {
-    f(tabId);
+    f(id);
   });
 }
 WindowUtils.on("tabs", "select", onTabSelect);
 
 let tabUpdatedListeners = new Set();
-function onTabUpdated({uuid}) {
-  let tabId = TabManager.getIdForUUID(uuid);
-  dump("Tabs.update uuid="+uuid+" id="+tabId+"\n");
+function onTabUpdated(event, {id}) {
   tabUpdatedListeners.forEach(f => {
-    f(tabId);
+    f(id);
   });
 }
 WindowUtils.on("tabs", "update", onTabUpdated);

@@ -4,6 +4,7 @@
     <script>
       let DEFAULT_URL = '../../landing-page/';
 
+      let tabsChannel = new BroadcastChannel('tabs');
       addEventListener('load', function() {
         let browser = document.getElementById('content');
         let urlbar = document.getElementById('urlbar');
@@ -14,12 +15,15 @@
 
         browser.addEventListener('mozbrowserlocationchange', function(e) {
           urlbar.value = e.detail;
+          tabsChannel.postMessage({ event: 'update', id: '1', url: e.detail, title: '', selected: true});
         });
 
         browser.setAttribute('src', DEFAULT_URL);
 
         urlbar.focus();
       });
+
+      tabsChannel.postMessage({ event: 'update', id: '1', url: 'about:blank', title: ''});
 
       // resizeTo doesn't work
       document.documentElement.setAttribute('width', screen.availWidth * 0.9);
@@ -83,6 +87,6 @@
       <div id="navbar-extensions"></div>
       <a id="reset" href="browserui://default">R</a>
     </div>
-    <iframe id="content" mozbrowser></iframe>
+    <iframe id="content" mozbrowser data-tab-id="1"></iframe>
   </body>
 </html>

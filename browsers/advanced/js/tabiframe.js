@@ -46,6 +46,8 @@ define(['js/eventemitter'], function(EventEmitter) {
      , 'about:webrtc'
   ];
 
+  let tabsChannel = new BroadcastChannel('tabs');
+
   let tabIframeProto = Object.create(HTMLElement.prototype);
 
   tabIframeProto.setLocation = function(url) {
@@ -115,6 +117,8 @@ define(['js/eventemitter'], function(EventEmitter) {
       iframe.setAttribute('remote', 'true');
     }
     iframe.setAttribute('mozallowfullscreen', 'true');
+    // Set this attribute for web extension.
+    iframe.setAttribute('data-tab-id', this.tabId);
     this.appendChild(iframe);
     for (let eventName of IFRAME_EVENTS) {
       iframe.addEventListener(eventName, this);
@@ -218,6 +222,16 @@ define(['js/eventemitter'], function(EventEmitter) {
     }
   });
 
+  let idCount = 1;
+  Object.defineProperty(tabIframeProto, 'tabId', {
+    get: function() {
+      if (!this._tabId) {
+        this._tabId = idCount++;
+      }
+      return this._tabId;
+    }
+  });
+
   tabIframeProto.canGoBack = function() {
     return new Promise((resolve, reject) => {
       if (!this._innerIframe) {
@@ -261,11 +275,13 @@ define(['js/eventemitter'], function(EventEmitter) {
         break;
       case 'mozbrowsertitlechange':
         this._title = e.detail;
+        tabsChannel.postMessage({ event: 'update', id: this.tabId, title: e.detail });
         break;
       case 'mozbrowserlocationchange':
         this.userInput = '';
         this._location = e.detail;
         this.updateRemoteNess(e.detail);
+        tabsChannel.postMessage({ event: 'update', id: this.tabId, url: e.detail });
         break;
       case 'mozbrowsericonchange':
         this._favicon = e.detail.href;
