@@ -4,6 +4,25 @@ let {setTimeout} = Components.utils.import("resource://gre/modules/Timer.jsm", {
 
 var EXPORTED_SYMBOLS = ['WindowUtils'];
 
+const chromeURL = Services.prefs.getCharPref("browser.chromeURL");
+
+let topWindowPromise = new Promise(done => {
+  let obs = function (subject, topic, data) {
+    let window = subject.defaultView;
+    // Use startsWith as the url may be appended with some query parameters
+    // Like ?url=http://command.line.site.com
+    if (!window || !window.location.href.startsWith(chromeURL)) {
+      return;
+    }
+    done(window);
+    // Also overload the promise to resolve to new window being opened
+    // when we reload the browser without restarting the process
+    topWindowPromise = Promise.resolve(window);
+  }
+  Services.obs.addObserver(obs, 'document-element-inserted', false);
+});
+
+
 var WindowUtils = {
   emit: function(name, action, options) {
     this.getChannel(name).then(channel => {
@@ -21,32 +40,8 @@ var WindowUtils = {
     });
   },
 
-  ready: function() {
-    return this.getWindow().then(window => {
-      return window.wrappedJSObject.Services.ready;
-    });
-  },
-
   getWindow: function() {
-    let window = Services.wm
-                         .getMostRecentWindow(null);
-    if (window) {
-      if (window.document.readyState === 'complete') {
-        return Promise.resolve(window);
-      } else {
-        return new Promise(done => {
-          window.addEventListener("load", function onLoad() {
-            window.removeEventListener("load", onLoad);
-            done(window);
-          }, true);
-        });
-      }
-    }
-    return new Promise(done => {
-      Services.tm.mainThread.dispatch(function() {
-        done(WindowUtils.getWindow());
-      }, Components.interfaces.nsIThread.DISPATCH_NORMAL);
-    });
+    return topWindowPromise;
   },
 
   getChannel: function(name) {
