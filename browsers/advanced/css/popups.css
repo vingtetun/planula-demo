@@ -43,7 +43,7 @@
 }
 
 .window.popup > .arrow {
-  background-image: url(images/panelarrow-vertical.svg);
+  background-image: url(images/shared/panelarrow-vertical.svg);
   background-repeat: no-repeat;
 
   position: absolute;
