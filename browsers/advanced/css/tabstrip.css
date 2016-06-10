@@ -5,6 +5,7 @@
 .tabstrip {
   padding: 0 28px 0 10px;
   margin-bottom: calc(-1 * var(--hwd-pixel));
+  background-color: #dcdcdc;
   z-index: 999;
 }
 
