@@ -14,12 +14,22 @@ let topWindowPromise = new Promise(done => {
     if (!window || !window.location.href.startsWith(chromeURL)) {
       return;
     }
-    done(window);
-    // Also overload the promise to resolve to new window being opened
-    // when we reload the browser without restarting the process
-    topWindowPromise = Promise.resolve(window);
+
+    if (window.document.readyState === 'complete') {
+      // Also overload the promise to resolve to new window being opened
+      // when we reload the browser without restarting the process
+      topWindowPromise = Promise.resolve(window);
+
+      return done(window);
+    }
+
+    return new Promise(done => {
+       Services.tm.mainThread.dispatch(function() {
+         done(WindowUtils.getWindow());
+       }, Components.interfaces.nsIThread.DISPATCH_NORMAL);
+    });
   }
-  Services.obs.addObserver(obs, 'document-element-inserted', false);
+  Services.obs.addObserver(obs, 'content-document-loaded', false);
 });
 
 

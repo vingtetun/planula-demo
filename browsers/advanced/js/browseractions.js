@@ -16,7 +16,7 @@ require(['js/popups/popuphelper', 'js/panels'], function(PopupHelper, Panels) {
   let buttons = new Map();
   let container = document.querySelector('.browser-actions');
   let channel = new BroadcastChannel('browserAction');
-  channel.onmessage = function ({data}) {
+  function onmessage({data}) {
     let options = data.options;
     let button = buttons.get(options.id);
 
@@ -45,6 +45,13 @@ require(['js/popups/popuphelper', 'js/panels'], function(PopupHelper, Panels) {
         break;
     }
   };
+  channel.onmessage = onmessage;
+
+  StartupCacheQueue.data.forEach((msg) => {
+    onmessage(msg);
+  });
+
+  StartupCacheQueue.unlisten();
 
 
   function createButton(options) {
