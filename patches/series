@@ -14,3 +14,4 @@ make.it.restartless.because.it.looks.cool.patch
 turn.on.webextensions.addon.implementation.on.by.default.patch
 add.panel.to.manifest.json.schema.patch
 savePrefToFile.patch
+package.files.patch

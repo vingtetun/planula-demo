@@ -1,0 +1,29 @@
+84d9d3f package planula files
+diff --git a/browser/installer/package-manifest.in b/browser/installer/package-manifest.in
+index 8e20c24..4a63786 100644
+--- a/browser/installer/package-manifest.in
++++ b/browser/installer/package-manifest.in
+@@ -358,6 +358,7 @@
+ @RESPATH@/browser/components/WebContentConverter.js
+ @RESPATH@/browser/components/BrowserComponents.manifest
+ @RESPATH@/browser/components/nsBrowserContentHandler.js
++@RESPATH@/browser/components/BrowserUIProtocolHandler.js
+ @RESPATH@/browser/components/nsBrowserGlue.js
+ @RESPATH@/browser/components/nsSetDefaultBrowser.manifest
+ @RESPATH@/browser/components/nsSetDefaultBrowser.js
+@@ -647,6 +648,15 @@
+ #endif
+ @RESPATH@/browser/features/*
+ 
++; [Planula addon]
++@RESPATH@/browser/extensions/web-extension-html@mozilla.org/chrome.manifest
++@RESPATH@/browser/extensions/web-extension-html@mozilla.org/bootstrap.js
++@RESPATH@/browser/extensions/web-extension-html@mozilla.org/install.rdf
++@RESPATH@/browser/extensions/web-extension-html@mozilla.org/api/glue.jsm
++@RESPATH@/browser/extensions/web-extension-html@mozilla.org/api/browserAction.js
++@RESPATH@/browser/extensions/web-extension-html@mozilla.org/api/tabs.js
++@RESPATH@/browser/extensions/web-extension-html@mozilla.org/api/utils.js
++
+ ; [Webide Files]
+ @RESPATH@/browser/chrome/webide@JAREXT@
+ @RESPATH@/browser/chrome/webide.manifest
