@@ -253,6 +253,10 @@ define(['js/eventemitter'], function(EventEmitter) {
     });
   };
 
+  tabIframeProto.content = function() {
+    return this._innerIframe;
+  };
+
   tabIframeProto.focus = function() {
     if (this._innerIframe) {
       this._innerIframe.focus();

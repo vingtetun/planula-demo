@@ -10,7 +10,7 @@
  *
  */
 
-require(['js/popups/popuphelper'], function(PopupHelper) {
+require(['js/popups/popuphelper', 'js/panels'], function(PopupHelper, Panels) {
 
   'use strict';
   let buttons = new Map();
