@@ -37,8 +37,9 @@ function preloadAddons() {
   for(let addon of document.querySelectorAll(".group.addons li")) {
     let extension = addon;
     let { id, path } = addon.dataset;
-    maybeInstall(path, id).then(() => {
+    maybeInstall(path, id).then((enabled) => {
       extension.classList.add("installed");
+      extension.classList.toggle("enabled", enabled);
     });
   }
 }
@@ -52,11 +53,11 @@ function maybeInstall(path, id) {
     am.getAddonByID(id).then(
      function(addon) {
         if (addon) {
-          resolve();
+          resolve(addon.isEnabled);
         } else {
           install(path).then(() => {
             disable(id);
-            resolve();
+            resolve(false);
           });
         }
       }
