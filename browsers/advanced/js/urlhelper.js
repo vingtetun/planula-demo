@@ -44,7 +44,7 @@ define(function() {
       // for cases, pure string
       var case2Reg = /[\?\.\s\:]/;
       // for cases, non-http schemes
-      var case3Reg = /^(data|view-source|browserui\:)/;
+      var case3Reg = /^(about|data|view-source|browserui\:)/;
       // for cases, only scheme but no domain provided
       var case4Reg = /^\w+\:\/*$/;
       var str = input.trim();
