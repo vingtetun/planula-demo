@@ -45,10 +45,13 @@ extensions.on("page-load", (type, page, params, sender, delegate) => {
   delegate.getSender = getSender;
 });
 
+let currentId = 1;
+
 let tabSelectListeners = new Set();
 function onTabSelect(event, {id}) {
   tabSelectListeners.forEach(f => {
     f(id);
+    currentId = id;
   });
 }
 WindowUtils.on("tabs", "select", onTabSelect);
@@ -111,19 +114,21 @@ extensions.registerSchemaAPI("tabs", null, (extension, context) => {
         return Promise.resolve(TabManager.convert(extension, tab));
       },
 
-      update(tabId, updateProperties) {
-        let tab = TabManager.getTab(tabId);
-        /*
-        WindowUtils.emit('tabs', 'navigate', {
+      update(tabId, properties) {
+        WindowUtils.emit('tabs', 'update', {
+          url: properties.url
         });
-        */
       },
 
-      create(createProperties) {
+      create(properties) {
         WindowUtils.emit('tabs', 'add', {
           select: true,
-          url: createProperties.url
+          url: properties.url
         });
+      },
+
+      getCurrent() {
+        return Promise.resolve(TabManager.convert(extension, TabManager.activeTab));
       },
 
       _execute: function(tabId, details, kind) {

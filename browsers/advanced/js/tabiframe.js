@@ -47,7 +47,6 @@ define(['js/eventemitter'], function(EventEmitter) {
   ];
 
   let tabsChannel = new BroadcastChannel('tabs');
-
   let tabIframeProto = Object.create(HTMLElement.prototype);
 
   tabIframeProto.setLocation = function(url) {

@@ -215,5 +215,27 @@ define(['js/tabiframe', 'js/eventemitter', 'js/keybindings'],
     );
   }
 
+  let channel = new BroadcastChannel('tabs');
+  channel.onmessage = function({data}) {
+    let options = data.options;
+    if (!options) {
+      return;
+    }
+
+    switch (data.action) {
+      case 'update':
+        TabIframeDeck.getSelected().setLocation(options.url);
+        break;
+
+      case 'add':
+        TabIframeDeck.add(options);
+        break;
+
+      default:
+        throw new Error(data.event + ' not implemented.');
+        break;
+    }
+  };
+
   return TabIframeDeck;
 });
