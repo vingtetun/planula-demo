@@ -100,8 +100,8 @@
 
 .urlinput, .searchinput {
   font: -moz-field;
-  font-size: 12px;
-  line-height: 22px;
+  font-size: 1.6rem;
+  line-height: 2.2rem;
   vertical-align: bottom;
   min-width: 0;
 }
