@@ -11,6 +11,7 @@ const Panels = (function() {
     frame.setAttribute('mozbrowser', 'true');
     frame.setAttribute('orientation', options.orientation);
     frame.setAttribute('src', options.panel);
+    frame.setAttribute('height', '30%');
     document.body.appendChild(frame);
     return frame;
   }
