@@ -162,8 +162,15 @@
 .browser-actions {
 }
 button.extension-button {
-  height: 18px;
+  padding: 4px;
+  padding-top: 5px;
+  border: 1px solid transparent;
 }
 button.extension-button img {
   height: 15px;
+}
+button.extension-button:hover {
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 5px;
 }
