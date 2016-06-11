@@ -50,6 +50,7 @@ define(['js/eventemitter'], function(EventEmitter) {
   let tabIframeProto = Object.create(HTMLElement.prototype);
 
   tabIframeProto.setLocation = function(url) {
+    url = url || 'about:blank';
     if (!this._innerIframe) {
       let loadInParent = INPROCESS_URLS.includes(url) || url.startsWith("browserui://");
       this._createInnerIframe(!loadInParent);
@@ -92,6 +93,8 @@ define(['js/eventemitter'], function(EventEmitter) {
       this._innerIframe.setVisible(true);
     }
     this.emit('visible');
+    this._innerIframe.setAttribute('selected', 'true');
+    tabsChannel.postMessage({ event: 'select', id: this.tabId });
   };
 
   tabIframeProto.hide = function() {
@@ -99,6 +102,7 @@ define(['js/eventemitter'], function(EventEmitter) {
     if (window.IS_PRIVILEGED && this._innerIframe) {
       this._innerIframe.setVisible(false);
     }
+    this._innerIframe.removeAttribute('selected');
     this.emit('hidden');
   };
 

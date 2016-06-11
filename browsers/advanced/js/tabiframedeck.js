@@ -66,9 +66,7 @@ define(['js/tabiframe', 'js/eventemitter', 'js/keybindings'],
 
       this.emit('add', {tabIframe: tabIframe});
 
-      if (options.url) {
-        tabIframe.setLocation(options.url);
-      }
+      tabIframe.setLocation(options.url);
 
       if (options.select || _selectIndex < 0) {
         this.select(tabIframe);
@@ -137,12 +135,10 @@ define(['js/tabiframe', 'js/eventemitter', 'js/keybindings'],
       this.emit('select', {tabIframe});
 
       // Do the actual switch
-      window.requestAnimationFrame(() => {
-        if (previouslySelectTabIframe) {
-          previouslySelectTabIframe.hide();
-        }
-        tabIframe.show();
-      });
+      if (previouslySelectTabIframe) {
+        previouslySelectTabIframe.hide();
+      }
+      tabIframe.show();
     },
 
     selectNext: function() {

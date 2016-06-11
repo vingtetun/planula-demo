@@ -26,11 +26,19 @@ let TabsState = {
     // Convert id to string as TabManager.getId returns a string.
     let id = String(data.id);
     let tab = this.tabs.get(id);
-    dump(" + TabState event: "+event+" for id:"+id+"\n");
+
+    /* XXX DEBUG
+    dump('Recv a TabState ' + event + ' for: ' + id + '\n');
+    for (let prop in data) {
+      dump(prop + ': ' + data[prop] + '\n');
+    }
+    */
+
     if (!tab) {
       tab = { id };
       this.tabs.set(id, tab);
     }
+
     for(let name of this.fields) {
       if (!(name in data)) {
         continue;
@@ -166,7 +174,7 @@ global.TabManager = {
 
   get activeTab() {
     for(let frame of this.frames()) {
-      if (frame.getVisible()) {
+      if (frame.hasAttribute('selected')) {
         return frame;
       }
     }

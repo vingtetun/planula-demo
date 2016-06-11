@@ -135,6 +135,10 @@ function(UrlHelper, TabIframeDeck, RegisterKeyBindings, BrowserActions) {
     'mozbrowsersecuritychange',
   ];
 
+  function isAboutBlank(location) {
+    return location.toString() === 'about:blank';
+  }
+
   function OnTabSelected() {
     let selectedTabIframe = TabIframeDeck.getSelected();
     if (lastSelectedTab) {
@@ -144,7 +148,8 @@ function(UrlHelper, TabIframeDeck, RegisterKeyBindings, BrowserActions) {
     }
     lastSelectedTab = selectedTabIframe;
     if (selectedTabIframe) {
-      if (!selectedTabIframe.location) {
+      if (!selectedTabIframe.location ||
+          isAboutBlank(selectedTabIframe.location)) {
         urlinput.focus();
         urlinput.select();
       }
@@ -170,6 +175,8 @@ function(UrlHelper, TabIframeDeck, RegisterKeyBindings, BrowserActions) {
 
     if (tabIframe.userInput) {
       urlinput.value = tabIframe.userInput;
+    } else if (isAboutBlank(tabIframe.location)) {
+      urlinput.value = '';
     } else if (tabIframe.location) {
       urlinput.value = UrlHelper.trim(tabIframe.location);
     } else if (eventName === null) {
