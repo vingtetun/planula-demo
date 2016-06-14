@@ -36,7 +36,7 @@ function shutdown() {
 let Addons = [];
 let AddonInstances = new Map();
 try {
-  Addons = Services.prefs.getCharPref("webextensions.list");
+  Addons = JSON.parse(Services.prefs.getCharPref("webextensions.list"));
   if (!Addons || !Array.isArray(Addons)) {
     Addons = [];
   }
@@ -67,14 +67,12 @@ function setupAddons() {
       channel.postMessage({ event: "installed", id: data.id });
     }
     else if (data.event == "uninstall") {
-      let idx = Addons.indexOf(data);
-      if (idx != -1) {
-        Addons.splice(idx, 1);
-      }
-
+      Addons = Addons.filter(a => a.id != data.id);
       let addon = AddonInstances.get(data.id);
-      addon.shutdown();
-      AddonInstances.delete(data.id);
+      if (addon) {
+        addon.shutdown();
+        AddonInstances.delete(data.id);
+      }
       channel.postMessage({ event: "uninstalled", id: data.id });
     }
     else if (data.event == "isInstalled") {
@@ -82,6 +80,7 @@ function setupAddons() {
       channel.postMessage({ event: "isInstalledResponse", isInstalled, id: data.id });
     }
     Services.prefs.setCharPref("webextensions.list", JSON.stringify(Addons));
+    Services.prefs.savePrefFile(null)
   });
 
   Addons.forEach(installAddon);
