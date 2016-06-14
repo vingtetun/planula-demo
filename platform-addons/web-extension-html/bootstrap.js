@@ -13,8 +13,8 @@ function startup() {
   // GeckoDriver.prototype.newSession
   // in testing/marionette/driver.js
   // Note that it also starts devtools.
-  Cu.import("resource://webextensions/glue.jsm");
-  WindowUtils.getWindow().then(window => {
+  let { getWindow } = Cu.import("resource://webextensions/glue.jsm", {});
+  getWindow().then(window => {
     Services.obs.notifyObservers(window, "browser-delayed-startup-finished", null);
   });
 
