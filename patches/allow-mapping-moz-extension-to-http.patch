@@ -1,0 +1,16 @@
+01842b7 Allow mapping moz-extension to http urls
+diff --git a/netwerk/protocol/res/ExtensionProtocolHandler.h b/netwerk/protocol/res/ExtensionProtocolHandler.h
+index f5f486a..9bcb1b9 100644
+--- a/netwerk/protocol/res/ExtensionProtocolHandler.h
++++ b/netwerk/protocol/res/ExtensionProtocolHandler.h
+@@ -23,7 +23,9 @@ public:
+   NS_FORWARD_NSIPROTOCOLHANDLER(SubstitutingProtocolHandler::)
+   NS_FORWARD_NSISUBSTITUTINGPROTOCOLHANDLER(SubstitutingProtocolHandler::)
+ 
+-  ExtensionProtocolHandler() : SubstitutingProtocolHandler("moz-extension") {}
++  ExtensionProtocolHandler() : SubstitutingProtocolHandler("moz-extension",
++    URI_STD | URI_IS_UI_RESOURCE | URI_IS_LOCAL_RESOURCE,
++    /* aEnforceFileOrJar = */ false) {}
+ 
+ protected:
+   ~ExtensionProtocolHandler() {}

@@ -16,3 +16,4 @@ add.panel.to.manifest.json.schema.patch
 savePrefToFile.patch
 get.chrome.runtime.working.with.mozbrowser.iframe.patch
 add.more.preferences.to.debug.patch
+allow-mapping-moz-extension-to-http.patch
