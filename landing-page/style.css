@@ -82,7 +82,7 @@ body {
   margin: 10px;
 }
 
-.group.addons li.installed {
+.group.addons li.loaded {
   visibility: visible;
 }
 
