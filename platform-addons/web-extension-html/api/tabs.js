@@ -45,21 +45,27 @@ extensions.on("page-load", (type, page, params, sender, delegate) => {
   delegate.getSender = getSender;
 });
 
-let currentId = 1;
-
 let tabSelectListeners = new Set();
 function onTabSelect(event, {id}) {
   tabSelectListeners.forEach(f => {
     f(id);
-    currentId = id;
   });
 }
 WindowUtils.on("tabs", "select", onTabSelect);
 
+// XXX This is extremelly weak to have to do setTimeout here.
+// What happens is that the WindowUtils.on('tabs', 'update', ...) listener
+// of utils.js is registered after this one (because the file is loaded after
+// this one).
+// It makes things broken as TabsState is living in utils.js. Because of this the
+// state of tabs is updated after the onUpdated event has been fired to scripts :/
+const { setTimeout } = Cu.import("resource://gre/modules/Timer.jsm", {});
 let tabUpdatedListeners = new Set();
 function onTabUpdated(event, {id}) {
   tabUpdatedListeners.forEach(f => {
-    f(id);
+    setTimeout(() => {
+      f(id);
+    });
   });
 }
 WindowUtils.on("tabs", "update", onTabUpdated);
@@ -81,7 +87,9 @@ extensions.registerSchemaAPI("tabs", null, (extension, context) => {
           let listener = tabId => {
             let tab = TabManager.getTab(tabId);
             fire(tabId,
-              {}, // TODO: fill this object
+              {
+                status: TabManager.convert(extension, tab).status
+              }, // TODO: fill this object
               TabManager.convert(extension, tab)
             );
           };
@@ -91,38 +99,36 @@ extensions.registerSchemaAPI("tabs", null, (extension, context) => {
           };
         }).api(),
 
+      onMoved: new EventManager(context, "tabs.onMoved", fire => {
+        // XXX NOT IMPLEMENTED
+        return () => {
+        };
+      }).api(),
+
+      onRemoved: new EventManager(context, "tabs.onRemoved", fire => {
+        // XXX NOT IMPLEMENTED
+        return () => {
+        };
+      }).api(),
+
       get(tabId) {
         let tab = TabManager.getTab(tabId);
-        if (!tab) {
-          dump("chromes.tabs.get("+tabId+") no iframe\n");
-          // XXX: The tab may not have any iframe yet
-          return Promise.resolve({
-            id: tabId,
-            url: "",
-            index: -1,
-            windowId: -1,
-            selected: true,
-            highlighted: true,
-            active: true,
-            pinned: false,
-            status: 0,
-            incognito: false,
-            width: 0,
-            height: 0,
-          });
-        }
         return Promise.resolve(TabManager.convert(extension, tab));
       },
 
       update(tabId, properties) {
         WindowUtils.emit('tabs', 'update', {
+          select: properties.active,
           url: properties.url
         });
       },
 
       create(properties) {
+        // XXX It needs to return a promise with the success/failure of creating
+        // a tab. Without that the session restore web extension will have an
+        // hard time to work.
         WindowUtils.emit('tabs', 'add', {
-          select: true,
+          select: properties.active,
           url: properties.url
         });
       },

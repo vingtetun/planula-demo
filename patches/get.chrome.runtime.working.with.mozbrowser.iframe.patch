@@ -1,0 +1,26 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/toolkit/components/extensions/MessageChannel.jsm b/toolkit/components/extensions/MessageChannel.jsm
+--- a/toolkit/components/extensions/MessageChannel.jsm
++++ b/toolkit/components/extensions/MessageChannel.jsm
+@@ -561,17 +561,19 @@ this.MessageChannel = {
+    * Each handler object is a `MessageReceiver` object as passed to
+    * `addListener`.
+    */
+   _handleMessage(handlers, data) {
+     // The target passed to `receiveMessage` is sometimes a message manager
+     // owner instead of a message manager, so make sure to convert it to a
+     // message manager first if necessary.
+     let {target} = data;
+-    if (!(target instanceof Ci.nsIMessageSender)) {
++    if (target instanceof Ci.nsIDOMHTMLIFrameElement) {
++      target = target.QueryInterface(Ci.nsIFrameLoaderOwner).frameLoader.messageManager;
++    } else if (!(target instanceof Ci.nsIMessageSender)) {
+       target = target.messageManager;
+     }
+ 
+     let deferred = {
+       sender: data.sender,
+       messageManager: target,
+     };
+     deferred.promise = new Promise((resolve, reject) => {

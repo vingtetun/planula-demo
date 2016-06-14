@@ -14,4 +14,5 @@ make.it.restartless.because.it.looks.cool.patch
 turn.on.webextensions.addon.implementation.on.by.default.patch
 add.panel.to.manifest.json.schema.patch
 savePrefToFile.patch
-package.files.patch
+get.chrome.runtime.working.with.mozbrowser.iframe.patch
+add.more.preferences.to.debug.patch

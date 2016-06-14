@@ -94,6 +94,7 @@ define(['js/eventemitter'], function(EventEmitter) {
     }
     this.emit('visible');
     this._innerIframe.setAttribute('selected', 'true');
+    tabsChannel.postMessage({ event: 'update', id: this.tabId, selected: true, active: true });
     tabsChannel.postMessage({ event: 'select', id: this.tabId });
   };
 
@@ -104,12 +105,14 @@ define(['js/eventemitter'], function(EventEmitter) {
     }
     this._innerIframe.removeAttribute('selected');
     this.emit('hidden');
+    tabsChannel.postMessage({ event: 'update', id: this.tabId, selected: false, active: false });
   };
 
   tabIframeProto.createdCallback = function() {
     this._zoom = 1;
     this._clearTabData();
     EventEmitter.decorate(this);
+    tabsChannel.postMessage({ event: 'update', id: this.tabId, url: this._location });
   };
 
   tabIframeProto._createInnerIframe = function(remote) {
@@ -276,9 +279,11 @@ define(['js/eventemitter'], function(EventEmitter) {
       case 'mozbrowserloadstart':
         this._clearTabData();
         this._loading = true;
+        tabsChannel.postMessage({ event: 'update', id: this.tabId, status: 'loading' });
         break;
       case 'mozbrowserloadend':
         this._loading = false;
+        tabsChannel.postMessage({ event: 'update', id: this.tabId, status: 'complete' });
         break;
       case 'mozbrowsertitlechange':
         this._title = e.detail;

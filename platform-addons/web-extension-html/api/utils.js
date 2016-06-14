@@ -17,6 +17,7 @@ let TabsState = {
     "mutedInfo",
     "url",
     "title",
+    "status",
     "favIconUrl",
   ],
 
@@ -26,13 +27,6 @@ let TabsState = {
     // Convert id to string as TabManager.getId returns a string.
     let id = String(data.id);
     let tab = this.tabs.get(id);
-
-    /* XXX DEBUG
-    dump('Recv a TabState ' + event + ' for: ' + id + '\n');
-    for (let prop in data) {
-      dump(prop + ': ' + data[prop] + '\n');
-    }
-    */
 
     if (!tab) {
       tab = { id };
