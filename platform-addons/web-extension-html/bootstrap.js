@@ -24,7 +24,10 @@ function startup() {
   // and initialize all devtools machinery.
   loader.require("devtools/client/framework/devtools-browser");
 
-  setupAddons();
+  // Wait for window load for the chromeURL pref to be set
+  getWindow().then(() => {
+    setupAddons();
+  });
 }
 
 function install() {

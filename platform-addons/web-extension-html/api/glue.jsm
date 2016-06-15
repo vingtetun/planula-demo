@@ -4,8 +4,6 @@ let {setTimeout} = Components.utils.import("resource://gre/modules/Timer.jsm", {
 
 var EXPORTED_SYMBOLS = ['WindowUtils'];
 
-const chromeURL = Services.prefs.getCharPref("browser.chromeURL");
-
 let topWindow;
 
 let windowListeners = new Set();
@@ -35,6 +33,7 @@ let obs = function (subject, topic, data) {
   let window = subject.defaultView;
   // Use startsWith as the url may be appended with some query parameters
   // Like ?url=http://command.line.site.com
+  let chromeURL = Services.prefs.getCharPref("browser.chromeURL");
   if (!window || !window.location.href.startsWith(chromeURL)) {
     return;
   }
@@ -57,6 +56,11 @@ let obs = function (subject, topic, data) {
 }
 Services.obs.addObserver(obs, 'content-document-loaded', false);
 
+let channels = new Map();
+onWindow(() => {
+  channels.clear();
+});
+
 var WindowUtils = {
   emit: function(name, action, options) {
     getWindow().then(window => {
@@ -77,10 +81,10 @@ var WindowUtils = {
   },
 
   getChannel: function(window, name) {
-    // As window is an xray, attributes on it are not visible to the content
-    let channel = window['WebExtHtml-' + name];
+    let channel = channels.get(name);
     if (!channel) {
-      channel = window['WebExtHtml-' + name] = new window.BroadcastChannel(name);
+      channel = new window.BroadcastChannel(name);
+      channels.set(name, channel);
     }
     return channel;
   },
