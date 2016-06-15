@@ -180,9 +180,3 @@ extensions.registerSchemaAPI("browserAction", null, (extension, context) => {
   }
   return { browserAction };
 });
-
-let onManifestUI = (type, directive, extension, manifest) => {
-  WindowUtils.emit('browserUI', 'tabs', { url: manifest.browser_ui.tabs });
-  dump("manifest >> "+JSON.stringify(manifest.browser_ui.tabs)+"\n");
-};
-extensions.on("manifest_browser_ui", onManifestUI);
