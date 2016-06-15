@@ -1,0 +1,20 @@
+{
+  "description": "implements the tabs on top",
+  "manifest_version": 2,
+  "name": "tabs-on-top",
+  "version": "1.0",
+
+  "applications": {
+    "gecko": {
+      "id": "tabs-on-top@mozilla.org"
+    }
+  },
+
+  "permissions": [
+    "tabs"
+  ],
+
+  "browser_ui": {
+    "tabs": "tabs.html"
+  }
+}
