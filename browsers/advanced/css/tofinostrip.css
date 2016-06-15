@@ -31,7 +31,7 @@ button.back-button {
     width: 35px !important;
     min-width: 22px;
     min-height: 22px;
-    background-image: url("images/tofino/glyph-arrow-nav-back-16.svg");
+    background-image: url("images/tofino/glyph-arrow-nav-back-16.svg") !important;
     background-size: 22px 22px;
     background-position: center center;
     background-repeat: no-repeat;
@@ -65,7 +65,7 @@ button.reload-button {
     margin-left: 10px;
     min-width: 22px;
     min-height: 22px;
-    background-image: url("images/tofino/glyph-arrow-reload-16.svg");
+    background-image: url("images/tofino/glyph-arrow-reload-16.svg") !important;
     background-size: 22px 22px;
     background-position: left center;
     background-repeat: no-repeat; 
