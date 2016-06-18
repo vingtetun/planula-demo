@@ -29,6 +29,21 @@
 
 html {
   height: 100%;
+  background: white;
+}
+
+/* Aero tweaks */
+html[os="windows"] {
+  -moz-appearance: -moz-win-borderless-glass;
+  background: transparent;
+}
+[os="windows"] .tabstrip {
+  background: transparent;
+  margin-top: 5px;
+  -moz-window-dragging: drag;
+}
+[os="windows"] .tabstrip .tab {
+  -moz-window-dragging: no-drag;
 }
 
 body {

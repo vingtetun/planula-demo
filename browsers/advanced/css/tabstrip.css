@@ -120,8 +120,8 @@
   overflow-x: hidden;
   z-index: 1000;
   opacity: 0.7;
-  font: -moz-field;
-  font-size: 1.6rem;
+  font: message-box;
+  font-size: 12px;
   outline: none;
 }
 
