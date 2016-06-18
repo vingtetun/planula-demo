@@ -66,10 +66,12 @@ main * {
   display: flex;
 }
 
+/*
+I don't know why it is usefull but it show unexpected scollbars on planula
 main.scrollable {
   overflow-y: scroll;
 }
-
+*/
 tab-iframe {
   flex-grow: 1;
   flex-shrink: 0;

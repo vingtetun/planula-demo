@@ -30,7 +30,7 @@ define((require, exports, module) => {
                style: theme.windowCloseButton,
                title: 'close',
                key: 'close',
-               onClick: event => sendEventToChrome('shutdown-application')
+               onClick: event => window.close()
       }),
       DOM.div({className: 'windowctrl win-min-button',
                style: theme.windowMinButton,

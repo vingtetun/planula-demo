@@ -27,6 +27,12 @@
     <!-- All further JS code is loaded from javascript -->
     <script data-main='./main' src='node_modules/requirejs/require.js'
             type='text/javascript' defer='defer'></script>
+    <script>
+      // Fix default window size on planula
+      // resizeTo doesn't work
+      document.documentElement.setAttribute('width', screen.availWidth * 0.9);
+      document.documentElement.setAttribute('height', screen.availHeight * 0.9);
+    </script>
   </head>
   <body>
     <!-- We need to render something, otherwise osx freaks out -->

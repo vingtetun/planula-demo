@@ -33,7 +33,8 @@ define((require, exports, module) => {
       }),
       key: webViewerCursor.get('id'),
       isBrowser: true,
-      isRemote: true,
+      isRemote: false, // Disable remote to support about pages
+                       // But we should just compute remoteness based on the URI
       allowFullScreen: true,
 
       isVisible: isActive(webViewerCursor) ||
