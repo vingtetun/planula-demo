@@ -1,0 +1,150 @@
+.tabbar {
+  width: 100%;
+  height: 36px;
+  padding-top: 11.5px;
+  width: calc(100% - 70px);
+  height: 24.5px;
+  padding-left: 70px;
+  white-space: nowrap;
+}
+
+.window-controls {
+  position: absolute;
+  left: 0;
+  width: 70px;
+  height: 24.5px;
+  padding-left: 4px;
+}
+
+.window-control {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-left: 8px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 50%;
+  border: 0.5px solid rgba(0,0,0,0.1);
+}
+
+.window-control-close { background: rgb(252, 99, 94) }
+.window-control-min   { background: rgb(254, 192, 65) }
+.window-control-max   { background: rgb(53, 204, 75) }
+
+.tab-shadow {
+  position: absolute;
+  left: 0;
+  margin-left: 70px;
+  width: 150px;
+  transition: transform 100ms linear;
+  will-change: transform;
+  top: 11.5px;
+}
+
+.tab-shadow-start,
+.tab-shadow-end {
+  position: absolute;
+  top: 0;
+  width: 24.5px;
+  height: 24.5px;
+  background-size: 100% 100%;
+}
+
+.tab-shadow-middle {
+  position: absolute;
+  left: 24.5px;
+  right: 24.5px;
+  height: 24.5px;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.tab-shadow-start {
+  background-image: url(border-left-coloured.png);
+  left: 0;
+}
+
+.tab-shadow-end {
+  background-image: url(border-right-coloured.png);
+  right: 0;
+}
+
+.tab {
+  display: inline-block;
+  width: 150px;
+  height: 24.5px;
+  position: relative;
+  /* transition: color 50ms linear; FIXME: break color switching in servo */
+  -moz-user-select: none;
+  cursor: default;
+}
+
+.tab:not(.selected) {
+  color: rgba(0,0,0,0.4);
+}
+
+.tab-title {
+  display: inline-block;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 24.5px;
+  vertical-align: middle;
+  width: 100%;
+  padding: 0 30px 0 34px;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-close {
+  position: absolute;
+  top: calc(24.5px / 2 - 8px);
+  right: 12px;
+  width: 16px;
+  line-height: 16px;
+  text-align: center;
+  font-family: 'ion';
+}
+
+.tab:not(:hover) > .tab-close {
+  opacity: 0;
+}
+
+.tab-favicon-wrapper {
+  position: absolute;
+  top: calc(24.5px / 2 - 8px);
+  left: 16px;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  border-radius: 3px;
+}
+
+.tab-favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background-size: 100% 100%;
+}
+
+.tab-spinner {
+  position: absolute;
+  top: calc(24.5px / 2 - 8px);
+  left: 12px;
+  width: 16px;
+  line-height: 16px;
+  text-align: center;
+  font-family: 'ion';
+  pointer-events: none;
+  animation-name: spinning;
+  animation-duration: 500ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes spinning {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
