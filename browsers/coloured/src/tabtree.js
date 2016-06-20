@@ -50,7 +50,8 @@ TabTree.prototype = {
     // FIXME
     // this.addTab({url: 'https://encrypted.google.com'});
     // this.addTab({url: 'http://wikipedia.org'});
-    this.addTab({url: 'http://firefox.com'});
+    let url = new URL('../../../landing-page', window.location);
+    this.addTab({url: url.href});
     return;
   },
 
@@ -360,7 +361,7 @@ Tab.prototype = {
       // set the src when the iframe is created
       this._createInnerIframe(null, url);
     } else {
-      this._innerIframe.src = url;
+      this._innerIframe.setAttribute('src', url);
     }
   },
 
@@ -486,7 +487,9 @@ Tab.prototype = {
     }
 
     iframe.setAttribute('mozbrowser', 'true');
-    iframe.setAttribute('remote', 'true');
+    // Disable remote to make about: and browserui: pages to work
+    // Ideally, we would dynamically update the remoteness of the iframe
+    // iframe.setAttribute('remote', 'true');
     iframe.setAttribute('mozallowfullscreen', 'true');
     iframe.setAttribute('tabindex', '-1');
     if (url) {

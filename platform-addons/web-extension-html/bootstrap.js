@@ -5,6 +5,7 @@ const Ci = Components.interfaces;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
+
 function startup() {
   Cu.import("resource://gre/modules/ExtensionManagement.jsm");
   ExtensionManagement.registerScript("resource://webextensions/utils.js");
@@ -24,16 +25,15 @@ function startup() {
   // and initialize all devtools machinery.
   loader.require("devtools/client/framework/devtools-browser");
 
-  // Wait for window load for the chromeURL pref to be set
-  getWindow().then(() => {
-    setupAddons();
-  });
+  setupAddons();
 }
 
 function install() {
 }
 
 function shutdown() {
+  let { WindowUtils } = Cu.import("resource://webextensions/glue.jsm", {});
+  WindowUtils.destroy();
 }
 
 let Addons = [];
@@ -61,32 +61,38 @@ function BroadcastChannelFor(uri, name) {
   return new window.BroadcastChannel(name);
 }
 function setupAddons() {
-  let chromeURL = Services.prefs.getCharPref("browser.chromeURL");
-  let channel = BroadcastChannelFor(chromeURL, "addons");
-  channel.addEventListener("message", ({ data }) => {
-    if (data.event == "install") {
-      installAddon(data);
-      Addons.push(data);
-      channel.postMessage({ event: "installed", id: data.id });
+  let { WindowUtils } = Cu.import("resource://webextensions/glue.jsm", {});
+  WindowUtils.on("addons", "install", (action, data, channel) => {
+    if (AddonInstances.has(data.id)) {
+      return;
     }
-    else if (data.event == "uninstall") {
-      Addons = Addons.filter(a => a.id != data.id);
-      let addon = AddonInstances.get(data.id);
-      if (addon) {
-        addon.shutdown();
-        AddonInstances.delete(data.id);
-      }
-      channel.postMessage({ event: "uninstalled", id: data.id });
+    installAddon(data);
+    Addons.push(data);
+    saveAddonList();
+    channel.postMessage({ event: "installed", id: data.id });
+  }, true);
+
+  WindowUtils.on("addons", "uninstall", (action, data, channel) => {
+    Addons = Addons.filter(a => a.id != data.id);
+    let addon = AddonInstances.get(data.id);
+    if (addon) {
+      addon.shutdown();
+      AddonInstances.delete(data.id);
     }
-    else if (data.event == "isInstalled") {
-      let isInstalled = AddonInstances.has(data.id);
-      channel.postMessage({ event: "isInstalledResponse", isInstalled, id: data.id });
-    }
-    Services.prefs.setCharPref("webextensions.list", JSON.stringify(Addons));
-    Services.prefs.savePrefFile(null)
-  });
+    saveAddonList();
+    channel.postMessage({ event: "uninstalled", id: data.id });
+  }, true);
+
+  WindowUtils.on("addons", "isInstalled", (action, data, channel) => {
+    let isInstalled = AddonInstances.has(data.id);
+    channel.postMessage({ event: "isInstalledResponse", isInstalled, id: data.id });
+  }, true);
 
   Addons.forEach(installAddon);
+}
+function saveAddonList() {
+  Services.prefs.setCharPref("webextensions.list", JSON.stringify(Addons));
+  Services.prefs.savePrefFile(null)
 }
 
 let {Extension} = Components.utils.import("resource://gre/modules/Extension.jsm", {});
@@ -112,6 +118,9 @@ function installAddon(addon) {
                               .getInterface(Ci.nsIDOMWindowUtils);
       // Allow the page to call window.close() to close the top level browser window.
       windowUtils.allowScriptsToClose();
+
+      //subject.documentElement.setAttribute("width", "800");
+      //subject.documentElement.setAttribute("height", "600");
     }
   }, name, false);
 });
