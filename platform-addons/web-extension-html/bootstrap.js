@@ -5,19 +5,12 @@ const Ci = Components.interfaces;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
+let CHROME_PREF = "browser.chromeURL";
+let addonChannel;
 
 function startup() {
   Cu.import("resource://gre/modules/ExtensionManagement.jsm");
   ExtensionManagement.registerScript("resource://webextensions/utils.js");
-
-  // Ensure dispatching "browser-delayed-startup-finished" to not break marionette
-  // GeckoDriver.prototype.newSession
-  // in testing/marionette/driver.js
-  // Note that it also starts devtools.
-  let { getWindow } = Cu.import("resource://webextensions/glue.jsm", {});
-  getWindow().then(window => {
-    Services.obs.notifyObservers(window, "browser-delayed-startup-finished", null);
-  });
 
   // Init devtools so that about:devtools-toolbox works asap
   let { loader } = Cu.import("resource://devtools/shared/Loader.jsm", {});
@@ -26,6 +19,10 @@ function startup() {
   loader.require("devtools/client/framework/devtools-browser");
 
   setupAddons();
+
+  Services.prefs.addObserver(CHROME_PREF, chromePrefObserver, false);
+  chromePrefObserver();
+  Services.obs.addObserver(onDocumentLoaded, "content-document-loaded", false);
 }
 
 function install() {
@@ -34,6 +31,54 @@ function install() {
 function shutdown() {
   let { WindowUtils } = Cu.import("resource://webextensions/glue.jsm", {});
   WindowUtils.destroy();
+  addonChannel.destroy();
+  Services.prefs.removeObserver(CHROME_PREF, chromePrefObserver);
+  Services.obs.removeObserver(onDocumentLoaded, "content-document-loaded", false);
+
+  AddonInstances.forEach(addon => addon.shutdown());
+}
+
+function onDocumentLoaded(subject, topic, data) {
+  let window = subject.defaultView;
+  // Use startsWith as the url may be appended with some query parameters
+  // Like ?url=http://command.line.site.com
+  let chromeURL = Services.prefs.getCharPref("browser.chromeURL");
+  if (!window || !window.location.href.startsWith(chromeURL) || chromeURL.startsWith("chrome:")) {
+    return;
+  }
+
+  function onLoaded() {
+    // Update both channels origin, but only when the page is loaded
+    // so that we don't send message before the browser ui is ready
+    let { WindowUtils } = Cu.import("resource://webextensions/glue.jsm", {});
+    WindowUtils.setOrigin(chromeURL);
+    addonChannel.setOrigin(chromeURL);
+
+    // Ensure dispatching "browser-delayed-startup-finished" to not break marionette
+    // GeckoDriver.prototype.newSession
+    // in testing/marionette/driver.js
+    // Note that it also starts devtools.
+    Services.obs.notifyObservers(window, "browser-delayed-startup-finished", null);
+  }
+
+  if (window.document.readyState === "complete") {
+    onLoaded();
+  } else {
+    window.addEventListener("load", function onLoad() {
+      window.removeEventListener("load", onLoad);
+      onLoaded();
+    }, true);
+  }
+}
+
+function chromePrefObserver(subj, topic, data) {
+  // Reset the channels if we switch back to browser.xul
+  let { WindowUtils } = Cu.import("resource://webextensions/glue.jsm", {});
+  let chromeURL = Services.prefs.getCharPref(CHROME_PREF);
+  if (chromeURL.startsWith("chrome:")) {
+    WindowUtils.off();
+    addonChannel.off();
+  }
 }
 
 let Addons = [];
@@ -46,23 +91,11 @@ try {
 } catch(e) {}
 
 
-let windows = [];
-function BroadcastChannelFor(uri, name) {
-  let baseURI = Services.io.newURI(uri, null, null);
-  let principal = Services.scriptSecurityManager.createCodebasePrincipal(baseURI, {inIsolatedMozBrowser:true});
-
-  let chromeWebNav = Services.appShell.createWindowlessBrowser(true);
-  // XXX: Keep a ref to the window otherwise it is garbaged and BroadcastChannel stops working.
-  windows.push(chromeWebNav);
-  let interfaceRequestor = chromeWebNav.QueryInterface(Ci.nsIInterfaceRequestor);
-  let docShell = interfaceRequestor.getInterface(Ci.nsIDocShell);
-  docShell.createAboutBlankContentViewer(principal);
-  let window = docShell.contentViewer.DOMDocument.defaultView;
-  return new window.BroadcastChannel(name);
-}
 function setupAddons() {
-  let { WindowUtils } = Cu.import("resource://webextensions/glue.jsm", {});
-  WindowUtils.on("addons", "install", (action, data, channel) => {
+  let { Channel, onWindow } = Cu.import("resource://webextensions/glue.jsm", {});
+  addonChannel = new Channel(true);
+
+  addonChannel.on("addons", "install", (action, data, channel) => {
     if (AddonInstances.has(data.id)) {
       return;
     }
@@ -72,7 +105,7 @@ function setupAddons() {
     channel.postMessage({ event: "installed", id: data.id });
   }, true);
 
-  WindowUtils.on("addons", "uninstall", (action, data, channel) => {
+  addonChannel.on("addons", "uninstall", (action, data, channel) => {
     Addons = Addons.filter(a => a.id != data.id);
     let addon = AddonInstances.get(data.id);
     if (addon) {
@@ -83,7 +116,7 @@ function setupAddons() {
     channel.postMessage({ event: "uninstalled", id: data.id });
   }, true);
 
-  WindowUtils.on("addons", "isInstalled", (action, data, channel) => {
+  addonChannel.on("addons", "isInstalled", (action, data, channel) => {
     let isInstalled = AddonInstances.has(data.id);
     channel.postMessage({ event: "isInstalledResponse", isInstalled, id: data.id });
   }, true);

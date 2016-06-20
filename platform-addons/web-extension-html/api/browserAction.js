@@ -121,7 +121,7 @@ Services.obs.addObserver(function(subject, topic, data) {
   }
 }, 'new-chrome-loaded', false);
 
-extensions.registerSchemaAPI("browserAction", null, (extension, context) => {
+extensions.registerSchemaAPI("browserAction", (extension, context) => {
   function getProperty(property, value, tabIdOrDetails) {
     let tabId = typeof(tabIdOrDetails) == "object" && tabIdOrDetails.tabId ?
                 tabIdOrDetails.tabId : tabIdOrDetails;

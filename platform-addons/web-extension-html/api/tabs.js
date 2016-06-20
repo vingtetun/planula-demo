@@ -70,7 +70,7 @@ function onTabUpdated(event, {id}) {
 }
 WindowUtils.on("tabs", "update", onTabUpdated);
 
-extensions.registerSchemaAPI("tabs", null, (extension, context) => {
+extensions.registerSchemaAPI("tabs", (extension, context) => {
   return {
     tabs: {
       onActivated: new EventManager(context, "tabs.onActivated", fire => {

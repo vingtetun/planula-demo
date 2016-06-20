@@ -5,107 +5,102 @@ let {setTimeout} = Components.utils.import("resource://gre/modules/Timer.jsm", {
 
 var EXPORTED_SYMBOLS = ['WindowUtils'];
 
-let topWindow;
+function Channel(content) {
+  this.content = content;
+  // List of listeners keyed by name and action:
+  // this.listeners.get(name).get(action)[x] == callback
+  this.listeners = new Map();
 
-let windowListeners = new Set();
-// Register a function called on the already loaded window
-// but also on the next browser loads
-function onWindow(callback) {
-  if (topWindow) {
-    callback(topWindow);
-  }
-  windowListeners.add(callback);
-}
-// Returns a promise resolved on the next loaded browser window
-function getWindow() {
-  if (topWindow) {
-    return Promise.resolve(topWindow);
-  }
-  return new Promise(done => {
-    let callback = window => {
-      windowListeners.delete(callback);
-      done(window);
-    };
-    windowListeners.add(callback);
-  });
+  this.origin = null;
+  // List of messages which were sent before the channel is ready
+  this.queuedMessages = [];
+
+  // List of windowless browsers created for channels
+  this.windows = [];
+  // Map of channels indexed by name
+  this.channels = new Map();
 }
 
-let obs = function (subject, topic, data) {
-  let window = subject.defaultView;
-  // Use startsWith as the url may be appended with some query parameters
-  // Like ?url=http://command.line.site.com
-  let chromeURL = Services.prefs.getCharPref("browser.chromeURL");
-  if (!window || !window.location.href.startsWith(chromeURL)) {
-    return;
-  }
-
-  function onLoaded() {
-    topWindow = window;
-    for(let listener of windowListeners) {
-      listener(window);
-    }
-  }
-
-  if (window.document.readyState === 'complete') {
-    onLoaded();
-  } else {
-    window.addEventListener("load", function onLoad() {
-      window.removeEventListener("load", onLoad);
-      onLoaded();
-    }, true);
-  }
-}
-Services.obs.addObserver(obs, 'content-document-loaded', false);
-
-let channels = new Map();
-let contentChannels = new Map();
-onWindow(() => {
-  WindowUtils.destroy();
-});
-
-let windows = [];
-function BroadcastChannelFor(uri, name, content) {
-  let baseURI = Services.io.newURI(uri, null, null);
-  let principal = Services.scriptSecurityManager.createCodebasePrincipal(baseURI, content ? {inIsolatedMozBrowser:true} : {});
-
-  let chromeWebNav = Services.appShell.createWindowlessBrowser(true);
-  // XXX: Keep a ref to the window otherwise it is garbaged and BroadcastChannel stops working.
-  windows.push(chromeWebNav);
-  let interfaceRequestor = chromeWebNav.QueryInterface(Ci.nsIInterfaceRequestor);
-  let docShell = interfaceRequestor.getInterface(Ci.nsIDocShell);
-  docShell.createAboutBlankContentViewer(principal);
-  let window = docShell.contentViewer.DOMDocument.defaultView;
-  return new window.BroadcastChannel(name);
-}
-
-var WindowUtils = {
+Channel.prototype = {
   emit: function(name, action, options) {
-    getWindow().then(window => {
-      let channel = this.getChannel(window, name);
+    if (this.origin) {
+      let channel = this.getChannel(name);
       channel.postMessage({ action, options });
-    });
+    } else {
+      this.queuedMessages.push({ name, action, options });
+    }
   },
 
   on: function(name, action, callback, content) {
-    onWindow(window => {
-      let channel = this.getChannel(window, name, content);
-      channel.addEventListener("message", function ({data}) {
-        if (data.event == action) {
-          callback(action, data, channel);
-        }
-      });
-    });
+    let channelListeners = this.listeners.get(name);
+    if (!channelListeners) {
+      channelListeners = new Map();
+      if (this.origin) {
+        let channel = this.getChannel(name);
+        channel.addEventListener("message", this);
+      }
+      this.listeners.set(name, channelListeners);
+    }
+    let actionListeners = channelListeners.get(action);
+    if (!actionListeners) {
+      actionListeners = [];
+      channelListeners.set(action, actionListeners);
+    }
+    actionListeners.push(callback);
   },
 
-  getChannel: function(window, name, content) {
-    let registry = content ? contentChannels : channels;
-    let channel = registry.get(name);
+  // Set the origin for this channel. Starts emiting/listeners for messages.
+  // Cleanup previous channels/messages from previously registered origin
+  setOrigin: function (origin) {
+    this.off();
+    this.origin = origin;
+    for(let [name, _] of this.listeners) {
+      let channel = this.getChannel(name);
+      channel.addEventListener("message", this);
+    }
+    for(let message of this.queuedMessages) {
+      let { name } = message;
+      delete message.name;
+      let channel = this.getChannel(name);
+      channel.postMessage(message);
+    }
+    this.queuedMessages = [];
+  },
+
+  handleEvent: function({target, data}) {
+    let channelListeners = this.listeners.get(target.name);
+    if (!channelListeners) {
+      return;
+    }
+    let action = data.event;
+    let actionListeners = channelListeners.get(action);
+    if (!actionListeners) {
+      return;
+    }
+    actionListeners.forEach(callback => callback(action, data, target));
+  },
+
+  BroadcastChannelFor: function(uri, name, content) {
+    let baseURI = Services.io.newURI(uri, null, null);
+    let principal = Services.scriptSecurityManager.createCodebasePrincipal(baseURI, content ? {inIsolatedMozBrowser:true} : {});
+
+    let chromeWebNav = Services.appShell.createWindowlessBrowser(true);
+    // XXX: Keep a ref to the window otherwise it is garbaged and BroadcastChannel stops working.
+    this.windows.push(chromeWebNav);
+    let interfaceRequestor = chromeWebNav.QueryInterface(Ci.nsIInterfaceRequestor);
+    let docShell = interfaceRequestor.getInterface(Ci.nsIDocShell);
+    docShell.createAboutBlankContentViewer(principal);
+    let window = docShell.contentViewer.DOMDocument.defaultView;
+    return new window.BroadcastChannel(name);
+  },
+
+  getChannel: function(name) {
+    let channel = this.channels.get(name);
     if (channel) {
       return channel;
     }
-    let chromeURL = Services.prefs.getCharPref("browser.chromeURL");
-    channel = BroadcastChannelFor(chromeURL, name, content);
-    registry.set(name, channel);
+    channel = this.BroadcastChannelFor(this.origin, name, this.content);
+    this.channels.set(name, channel);
     return channel;
   },
 
@@ -123,20 +118,29 @@ var WindowUtils = {
     });
   },
 
-  destroy: function () {
-
-    channels.forEach(channel => {
+  off: function () {
+    if (this.origin) {
+      for(let [name, _] of this.listeners) {
+        let channel = this.getChannel(name);
+        channel.removeEventListener("message", this);
+      }
+    }
+    this.channels.forEach(channel => {
       try {
         channel.close();
       } catch(e) {}
     });
-    channels.clear();
-    contentChannels.forEach(channel => {
-      try {
-        contentChannel.close();
-      } catch(e) {}
-    });
-    contentChannels.clear();
-    windows = [];
+    this.channels.clear();
+    this.windows.forEach(window => window.close());
+    this.windows = [];
+  },
+
+  destroy: function () {
+    this.off();
+    this.listeners.clear();
+    this.queuedMessages = [];
+    this.origin = null;
   }
-};
+}
+
+var WindowUtils = new Channel(false);
