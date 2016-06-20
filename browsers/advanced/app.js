@@ -33,6 +33,17 @@ require.config({
   scriptType: 'text/javascript;version=1.8'
 });
 
+// Load custom tab strip via url query parameter
+let url = new URL(location);
+let tabsui = url.searchParams.get('tabsui') || 'tabstrip';
+if (tabsui == 'tabstrip') {
+  // These attributes have to be set before document load,
+  // so we can't set them from tabstrip.js because requirejs
+  // is much asynchronous
+  document.documentElement.setAttribute("tabsintitlebar", "true");
+  document.documentElement.setAttribute("chromemargin", "0,2,2,2");
+}
+
 require(['js/tabiframedeck'], function(TabIframeDeck) {
 
   'use strict';
@@ -41,9 +52,6 @@ require(['js/tabiframedeck'], function(TabIframeDeck) {
     document.title = 'Firefox - ' + tabIframe.title;
   });
 
-  // Load custom tab strip via url query parameter
-  let url = new URL(location);
-  let tabsui = url.searchParams.get('tabsui') || 'tabstrip';
   require([
     'js/' + tabsui,
     'js/navbar',

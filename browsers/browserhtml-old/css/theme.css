@@ -66,6 +66,9 @@ main * {
   display: flex;
 }
 
+html {
+  background: white;
+}
 /*
 I don't know why it is usefull but it show unexpected scollbars on planula
 main.scrollable {
