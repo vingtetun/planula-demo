@@ -1,5 +1,7 @@
 From: Vivien Nicolas <vnicolas@mozilla.com>
 
+mozbrowser.getContentDimensions throws if called too early. r=?
+
 diff --git a/dom/browser-element/BrowserElementChildPreload.js b/dom/browser-element/BrowserElementChildPreload.js
 --- a/dom/browser-element/BrowserElementChildPreload.js
 +++ b/dom/browser-element/BrowserElementChildPreload.js

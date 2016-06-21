@@ -1,9 +1,11 @@
 From: Vivien Nicolas <vnicolas@mozilla.com>
 
+Bug XXXXXXX - Support mozbrowser.executeScript for systemPrincipal host. r=?
+
 diff --git a/dom/browser-element/BrowserElementChildPreload.js b/dom/browser-element/BrowserElementChildPreload.js
 --- a/dom/browser-element/BrowserElementChildPreload.js
 +++ b/dom/browser-element/BrowserElementChildPreload.js
-@@ -1121,17 +1121,23 @@ BrowserElementChild.prototype = {
+@@ -1036,17 +1036,23 @@ BrowserElementChild.prototype = {
        }
        let currentURI = docShell.QueryInterface(Ci.nsIWebNavigation).currentURI;
        if (!currentURI.equalsExceptRef(expectedURI)) {

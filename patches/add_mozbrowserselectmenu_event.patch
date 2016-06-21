@@ -1,9 +1,11 @@
 From: Vivien Nicolas <vnicolas@mozilla.com>
 
+Bug XXXXXX - Add mozbrowserselectmenu event for mozbrowser iframes. r=?
+
 diff --git a/dom/browser-element/BrowserElementChildPreload.js b/dom/browser-element/BrowserElementChildPreload.js
 --- a/dom/browser-element/BrowserElementChildPreload.js
 +++ b/dom/browser-element/BrowserElementChildPreload.js
-@@ -18,16 +18,18 @@ Cu.import("resource://gre/modules/Extens
+@@ -17,16 +17,18 @@ Cu.import("resource://gre/modules/Extens
  
  XPCOMUtils.defineLazyServiceGetter(this, "acs",
                                     "@mozilla.org/audiochannel/service;1",
@@ -22,7 +24,7 @@ diff --git a/dom/browser-element/BrowserElementChildPreload.js b/dom/browser-ele
                                       "nsITimer",
                                       "initWithCallback");
  
-@@ -234,16 +236,21 @@ BrowserElementChild.prototype = {
+@@ -235,16 +237,21 @@ BrowserElementChild.prototype = {
      // bubble, and we're not using a capturing listener.  If we'd used
      // useCapture == true, we /would/ hear unload events from the window, which
      // is not what we want!
@@ -69,7 +71,7 @@ diff --git a/dom/browser-element/BrowserElementChildPreload.js b/dom/browser-ele
 diff --git a/dom/browser-element/BrowserElementParent.js b/dom/browser-element/BrowserElementParent.js
 --- a/dom/browser-element/BrowserElementParent.js
 +++ b/dom/browser-element/BrowserElementParent.js
-@@ -341,16 +341,25 @@ BrowserElementParent.prototype = {
+@@ -342,16 +342,25 @@ BrowserElementParent.prototype = {
  
    _setupMessageListener: function() {
      this._mm = this._frameLoader.messageManager;

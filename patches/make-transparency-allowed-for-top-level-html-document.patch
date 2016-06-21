@@ -1,0 +1,52 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/layout/generic/nsContainerFrame.cpp b/layout/generic/nsContainerFrame.cpp
+--- a/layout/generic/nsContainerFrame.cpp
++++ b/layout/generic/nsContainerFrame.cpp
+@@ -647,17 +647,17 @@ nsContainerFrame::SyncWindowProperties(n
+ 
+   nsViewManager* vm = aView->GetViewManager();
+   nsView* rootView = vm->GetRootView();
+ 
+   if (aView != rootView)
+     return;
+ 
+   Element* rootElement = aPresContext->Document()->GetRootElement();
+-  if (!rootElement || !rootElement->IsXULElement()) {
++  if (!rootElement) {
+     // Scrollframes use native widgets which don't work well with
+     // translucent windows, at least in Windows XP. So if the document
+     // has a root scrollrame it's useless to try to make it transparent,
+     // we'll just get something broken.
+     // nsCSSFrameConstructor::ConstructRootFrame constructs root
+     // scrollframes whenever the root element is not a XUL element, so
+     // we test for that here. We can't just call
+     // presShell->GetRootScrollFrame() since that might not have
+@@ -691,21 +691,23 @@ nsContainerFrame::SyncWindowProperties(n
+ 
+   if (!aRC)
+     return;
+ 
+   if (!weak.IsAlive()) {
+     return;
+   }
+ 
+-  nsBoxLayoutState aState(aPresContext, aRC);
+-  nsSize minSize = rootFrame->GetXULMinSize(aState);
+-  nsSize maxSize = rootFrame->GetXULMaxSize(aState);
++  if (rootElement->IsXULElement()) {
++    nsBoxLayoutState aState(aPresContext, aRC);
++    nsSize minSize = rootFrame->GetXULMinSize(aState);
++    nsSize maxSize = rootFrame->GetXULMaxSize(aState);
+ 
+-  SetSizeConstraints(aPresContext, windowWidget, minSize, maxSize);
++    SetSizeConstraints(aPresContext, windowWidget, minSize, maxSize);
++  }
+ #endif
+ }
+ 
+ void nsContainerFrame::SetSizeConstraints(nsPresContext* aPresContext,
+                                           nsIWidget* aWidget,
+                                           const nsSize& aMinSize,
+                                           const nsSize& aMaxSize)
+ {

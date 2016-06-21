@@ -1,5 +1,7 @@
 From: Vivien Nicolas <vnicolas@mozilla.com>
 
+Allow top level html document hosted into a nsIDOMChromeWindow to access its properties. r=?
+
 diff --git a/dom/base/nsGlobalWindow.cpp b/dom/base/nsGlobalWindow.cpp
 --- a/dom/base/nsGlobalWindow.cpp
 +++ b/dom/base/nsGlobalWindow.cpp

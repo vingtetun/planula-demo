@@ -1,9 +1,11 @@
 From: Vivien Nicolas <vnicolas@mozilla.com>
 
+Bug XXXXXXX - Allow MozBrowser iframes to load content from others protocols than their embedders. r=?
+
 diff --git a/caps/nsScriptSecurityManager.cpp b/caps/nsScriptSecurityManager.cpp
 --- a/caps/nsScriptSecurityManager.cpp
 +++ b/caps/nsScriptSecurityManager.cpp
-@@ -66,16 +66,17 @@
+@@ -67,16 +67,17 @@
  #include "mozilla/StaticPtr.h"
  #include "nsContentUtils.h"
  #include "nsJSUtils.h"
@@ -21,7 +23,7 @@ diff --git a/caps/nsScriptSecurityManager.cpp b/caps/nsScriptSecurityManager.cpp
  nsIStringBundle *nsScriptSecurityManager::sStrBundle = nullptr;
  JSRuntime       *nsScriptSecurityManager::sRuntime   = 0;
  bool nsScriptSecurityManager::sStrictFileOriginPolicy = true;
-@@ -772,16 +773,22 @@ nsScriptSecurityManager::CheckLoadURIWit
+@@ -858,16 +859,22 @@ nsScriptSecurityManager::CheckLoadURIWit
              if (!SecurityCompareURIs(sourceBaseURI, targetBaseURI) &&
                  !nsContentUtils::IsExactSitePermAllow(aPrincipal, WEBAPPS_PERM_NAME)) {
                  return NS_ERROR_DOM_BAD_URI;

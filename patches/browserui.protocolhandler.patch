@@ -28,7 +28,7 @@ diff --git a/browser/components/BrowserUIProtocolHandler.js b/browser/components
 new file mode 100644
 --- /dev/null
 +++ b/browser/components/BrowserUIProtocolHandler.js
-@@ -0,0 +1,175 @@
+@@ -0,0 +1,195 @@
 +/* This Source Code Form is subject to the terms of the Mozilla Public
 + * License, v. 2.0. If a copy of the MPL was not distributed with this file,
 + * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -48,13 +48,26 @@ new file mode 100644
 +Services.obs.addObserver(setURIAsDefaultUI, "set-default-ui", false);
 +Services.obs.addObserver(resetDefaultUI, "reset-default-ui", false);
 +
++[
++  'chrome-document-loaded',
++  'content-document-loaded',
++].forEach(function(name) {
++  Services.obs.addObserver(function(subject, topic, data) {
++    if (subject.defaultView instanceof Ci.nsIDOMChromeWindow &&
++        subject.location == Services.prefs.getCharPref('browser.chromeURL')) {
++      Services.obs.notifyObservers(null, 'new-chrome-loaded', null);
++    }
++  }, name, false);
++});
++
++
 +function setURIAsDefaultUI(subject, topic, state) {
 +  let uri = subject.QueryInterface(Ci.nsIURI);
 +  let url = Services.io.newURI(uri.spec, null, null);
 +
 +  Preferences.set(url);
 +  Permissions.set(url);
-+  restart();
++  restart(url);
 +}
 +
 +
@@ -63,7 +76,7 @@ new file mode 100644
 +
 +  Permissions.unset(uri);
 +  Preferences.unset(uri);
-+  restart();
++  restart(uri);
 +}
 +
 +const Permissions = (function() {
@@ -72,16 +85,22 @@ new file mode 100644
 +    "popup",
 +    "embed-apps",
 +    "systemXHR",
++    "root-window",
 +    "browser:universal-xss"
 +  ];
 +
 +  function add(uri, name) {
 +    Services.perms.add(uri, name, Ci.nsIPermissionManager.ALLOW_ACTION);
++
++    let principal = Services.scriptSecurityManager.createCodebasePrincipal(uri, {});
++    Services.perms.addFromPrincipal(principal, name, Ci.nsIPermissionManager.ALLOW_ACTION);
 +  }
 +
 +  function remove(uri, name) {
-+    let url = Services.io.newURI(uri.scheme + '://' + uri.host, null, null);
-+    Services.perms.remove(url, name);
++    Services.perms.remove(uri, name);
++
++    let principal = Services.scriptSecurityManager.createCodebasePrincipal(uri, {});
++    Services.perms.removeFromPrincipal(principal, name);
 +  }
 +
 +  return {
@@ -102,7 +121,6 @@ new file mode 100644
 +    //
 +    { name: "dom.webcomponents.enabled", value: true },
 +    { name: "dom.mozBrowserFramesEnabled", value: true },
-+    { name: "dom.webextensions-uiglue.enabled", value: true },
 +    { name: "extensions.webextensions.addon_implementation", value: true },
 +
 +    //
@@ -149,10 +167,12 @@ new file mode 100644
 +  }
 +})();
 +
-+function restart() {
-+  Cc["@mozilla.org/toolkit/app-startup;1"]
-+    .getService(Ci.nsIAppStartup)
-+    .quit(Ci.nsIAppStartup.eForceQuit | Ci.nsIAppStartup.eRestart);
++function restart(uri) {
++  //Cc["@mozilla.org/toolkit/app-startup;1"]
++  //  .getService(Ci.nsIAppStartup)
++  //  .quit(Ci.nsIAppStartup.eForceQuit | Ci.nsIAppStartup.eRestart);
++  Services.ww.activeWindow.document.location = uri.spec;
++  Services.prefs.savePrefFile(null); 
 +}
 +
 +

@@ -22,3 +22,16 @@ diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
  // Require signed add-ons by default
  pref("xpinstall.signatures.required", true);
  pref("xpinstall.signatures.devInfoURL", "https://wiki.mozilla.org/Addons/Extension_Signing");
+@@ -1428,8 +1428,12 @@ pref("browser.esedbreader.loglevel", "Er
+ pref("browser.laterrun.enabled", false);
+ 
+ pref("browser.migration.automigrate", false);
+ 
+ // Enable browser frames for use on desktop.  Only exposed to chrome callers.
+ pref("dom.mozBrowserFramesEnabled", true);
+ 
+ pref("extensions.pocket.enabled", true);
++pref("extensions.webextensions.addon_implementation", true);
++pref("browser.cache.disk.enable", false);
++pref("browser.dom.window.dump.enabled", true);
++pref("toolkit.startup.max_resumed_crashes", -1);

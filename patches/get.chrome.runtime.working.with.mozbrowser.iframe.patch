@@ -1,11 +1,13 @@
 From: Vivien Nicolas <vnicolas@mozilla.com>
 
+Ensure chrome.runtime works when hosted into mozbrowser iframe containers. r=?
+
 diff --git a/toolkit/components/extensions/MessageChannel.jsm b/toolkit/components/extensions/MessageChannel.jsm
 --- a/toolkit/components/extensions/MessageChannel.jsm
 +++ b/toolkit/components/extensions/MessageChannel.jsm
-@@ -561,17 +561,19 @@ this.MessageChannel = {
-    * Each handler object is a `MessageReceiver` object as passed to
-    * `addListener`.
+@@ -565,17 +565,19 @@ this.MessageChannel = {
+    * @param {object} data
+    * @param {nsIMessageSender|nsIMessageManagerOwner} data.target
     */
    _handleMessage(handlers, data) {
      // The target passed to `receiveMessage` is sometimes a message manager
