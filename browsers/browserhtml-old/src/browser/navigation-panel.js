@@ -42,7 +42,13 @@ define((require, exports, module) => {
                style: theme.windowMaxButton,
                title: 'maximize',
                key: 'maximize',
-               onClick: event => window.maximize()
+               onClick: event => {
+                 if (window.windowState == window.STATE_MAXIMIZED) {
+                   window.restore();
+                 } else {
+                   window.maximize();
+                 }
+               }
       })
     ]));
 
