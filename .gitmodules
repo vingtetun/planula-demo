@@ -1,0 +1,3 @@
+[submodule "browsers/browserhtml-old"]
+	path = browsers/browserhtml-old
+	url = git@github.com:ochameau/planula-browser-html.git
