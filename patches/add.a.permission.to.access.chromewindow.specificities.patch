@@ -1,0 +1,48 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/dom/base/nsGlobalWindow.cpp b/dom/base/nsGlobalWindow.cpp
+--- a/dom/base/nsGlobalWindow.cpp
++++ b/dom/base/nsGlobalWindow.cpp
+@@ -4564,19 +4564,40 @@ nsGlobalWindow::GetOwnPropertyNames(JSCo
+       }
+     }
+   }
+ }
+ 
+ /* static */ bool
+ nsGlobalWindow::IsPrivilegedChromeWindow(JSContext* aCx, JSObject* aObj)
+ {
++
++  nsIPrincipal* principal = nsContentUtils::ObjectPrincipal(aObj);
++
+   // For now, have to deal with XPConnect objects here.
+-  return xpc::WindowOrNull(aObj)->IsChromeWindow() &&
+-         nsContentUtils::ObjectPrincipal(aObj) == nsContentUtils::GetSystemPrincipal();
++  if (xpc::WindowOrNull(aObj)->IsChromeWindow() &&
++      principal == nsContentUtils::GetSystemPrincipal()) {
++    return true;
++  }
++
++  nsCOMPtr<nsIPermissionManager> permMgr =
++    services::GetPermissionManager();
++  if (!permMgr) {
++    NS_ERROR("No PermissionManager available!");
++    return false;
++  }
++
++  uint32_t permission = nsIPermissionManager::DENY_ACTION;
++  permMgr->TestExactPermissionFromPrincipal(principal, "root-window", &permission);
++
++  if (permission == nsIPermissionManager::ALLOW_ACTION) {
++    return true;
++  }
++
++  return false;
+ }
+ 
+ /* static */ bool
+ nsGlobalWindow::IsShowModalDialogEnabled(JSContext*, JSObject*)
+ {
+   static bool sAddedPrefCache = false;
+   static bool sIsDisabled;
+   static const char sShowModalDialogPref[] = "dom.disable_window_showModalDialog";

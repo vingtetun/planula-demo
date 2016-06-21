@@ -138,22 +138,3 @@ function installAddon(addon) {
   extension.startup();
   AddonInstances.set(addon.id, extension);
 }
-
-// This isn't specific to Addons/WebExtensions
-[
-  'document-element-inserted',
-].forEach(function(name) {
-  Services.obs.addObserver(function(subject, topic, data) {
-    if (subject.defaultView instanceof Ci.nsIDOMChromeWindow &&
-        subject.location.href.startsWith(Services.prefs.getCharPref('browser.chromeURL'))) {
-      let window = subject.defaultView;
-      let windowUtils = window.QueryInterface(Ci.nsIInterfaceRequestor)
-                              .getInterface(Ci.nsIDOMWindowUtils);
-      // Allow the page to call window.close() to close the top level browser window.
-      windowUtils.allowScriptsToClose();
-
-      //subject.documentElement.setAttribute("width", "800");
-      //subject.documentElement.setAttribute("height", "600");
-    }
-  }, name, false);
-});

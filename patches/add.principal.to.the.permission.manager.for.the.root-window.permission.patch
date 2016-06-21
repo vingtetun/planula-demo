@@ -1,0 +1,38 @@
+From: Vivien Nicolas <vnicolas@mozilla.com>
+
+diff --git a/browser/components/BrowserUIProtocolHandler.js b/browser/components/BrowserUIProtocolHandler.js
+--- a/browser/components/BrowserUIProtocolHandler.js
++++ b/browser/components/BrowserUIProtocolHandler.js
+@@ -49,25 +49,32 @@ function resetDefaultUI(subject, topic, 
+ }
+ 
+ const Permissions = (function() {
+   const kPermissions = [
+     "browser",
+     "popup",
+     "embed-apps",
+     "systemXHR",
++    "root-window",
+     "browser:universal-xss"
+   ];
+ 
+   function add(uri, name) {
+     Services.perms.add(uri, name, Ci.nsIPermissionManager.ALLOW_ACTION);
++
++    let principal = Services.scriptSecurityManager.createCodebasePrincipal(uri, {});
++    Services.perms.addFromPrincipal(principal, name, Ci.nsIPermissionManager.ALLOW_ACTION);
+   }
+ 
+   function remove(uri, name) {
+     Services.perms.remove(uri, name);
++
++    let principal = Services.scriptSecurityManager.createCodebasePrincipal(uri, {});
++    Services.perms.removeFromPrincipal(principal, name);
+   }
+ 
+   return {
+     set: function(uri) {
+       kPermissions.forEach(function(name) { add(uri, name); });
+     },
+ 
+     unset: function(uri) {

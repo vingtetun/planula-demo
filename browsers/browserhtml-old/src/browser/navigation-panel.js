@@ -36,13 +36,13 @@ define((require, exports, module) => {
                style: theme.windowMinButton,
                title: 'minimize',
                key: 'minimize',
-               onClick: event => sendEventToChrome('minimize-native-window')
+               onClick: event => window.minimize()
       }),
       DOM.div({className: 'windowctrl win-max-button',
                style: theme.windowMaxButton,
                title: 'maximize',
                key: 'maximize',
-               onClick: event => sendEventToChrome('toggle-fullscreen-native-window')
+               onClick: event => window.maximize()
       })
     ]));
 

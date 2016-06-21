@@ -17,3 +17,6 @@ savePrefToFile.patch
 get.chrome.runtime.working.with.mozbrowser.iframe.patch
 add.more.preferences.to.debug.patch
 allow-mapping-moz-extension-to-http.patch
+add.a.permission.to.access.chromewindow.specificities.patch
+allow.the.top.level.window.to.call.window.close
+add.principal.to.the.permission.manager.for.the.root-window.permission.patch
