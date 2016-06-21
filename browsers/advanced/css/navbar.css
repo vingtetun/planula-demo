@@ -167,6 +167,7 @@ button.extension-button {
   border: 1px solid transparent;
 }
 button.extension-button img {
+  width: 15px;
   height: 15px;
 }
 button.extension-button:hover {
