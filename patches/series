@@ -3,7 +3,6 @@ fix_executeScript_with_systemPrincipal_for_mozbrowser.patch
 add_mozbrowserselectmenu_event.patch
 allow.places.to.be.configured.with.get.parameters.patch
 prevent.getContentDimensions.to.throw.if.called.early.patch
-browserui.protocolhandler.patch
 devtools.fixes.local.patch
 register.planula.extensions.pref
 web.extensions.addon.implementation.pref

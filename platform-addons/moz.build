@@ -1,3 +1,4 @@
 DIRS = [
-  'web-extension-html'
+  'web-extension-html',
+  'html-runner'
 ]

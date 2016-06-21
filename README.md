@@ -1,5 +1,17 @@
 # planula-demo
 
+## Checkout
+
+If you want to be able to use all browser flavors, you will have to checkout submodules.
+To do that, you can clone with the --recursive option.
+```
+git clone --recursive https://github.com/vingtetun/planula-demo.git
+```
+Or after regular clone, do that:
+```
+git submodule update --init
+```
+
 ## Repo content
 
 /index.html
@@ -17,6 +29,7 @@
 
 ## How to build'n run
 
+```
 $ git clone https://github.com/vingtetun/planula-demo.git
 $ cd planula-demo/
 $ sudo python -m SimpleHTTPServer 80 &
@@ -29,3 +42,4 @@ $ ln -s /abs/path/to/planula-demo/platform-addons/ browser/extensions/planula
 $ ./mach bootstrap
 $ ./mach build
 $ ./mach run http://localhost/
+```
