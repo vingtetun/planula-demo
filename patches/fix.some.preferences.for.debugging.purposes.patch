@@ -35,3 +35,4 @@ diff --git a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
 +pref("browser.cache.disk.enable", false);
 +pref("browser.dom.window.dump.enabled", true);
 +pref("toolkit.startup.max_resumed_crashes", -1);
++pref("xpinstall.signatures.required", true);
