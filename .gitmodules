@@ -4,3 +4,6 @@
 [submodule "browsers/advanced"]
 	path = browsers/advanced
 	url = git@github.com:ochameau/planula-browser-advanced.git
+[submodule "platform-addons/browserui"]
+	path = platform-addons/browserui
+	url = git@github.com:ochameau/browserui.git
