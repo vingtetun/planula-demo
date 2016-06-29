@@ -82,7 +82,7 @@
       function disable(id) {
         getAddonByID(id).then(
           function succes(addon) {
-            addon.disable().then(
+            addon.setEnabled(false).then(
               function success() {
                 console.log('success to call disable for :', id);
               },
@@ -101,7 +101,7 @@
       function enable(id) {
         getAddonByID(id).then(
           function succes(addon) {
-            addon.enable().then(
+            addon.setEnabled(true).then(
               function success() {
                 console.log('success to call enable for :', id);
               },

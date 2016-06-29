@@ -7,7 +7,6 @@ devtools.fixes.local.patch
 register.planula.extensions.pref
 web.extensions.addon.implementation.pref
 fix.some.preferences.for.debugging.purposes.patch
-add.enable.disable.methods.to.mozAddonManager.patch
 add.panel.to.manifest.json.schema.patch
 get.chrome.runtime.working.with.mozbrowser.iframe.patch
 allow-mapping-moz-extension-to-http.patch
