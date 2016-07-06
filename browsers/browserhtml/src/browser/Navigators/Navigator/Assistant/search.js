@@ -16,72 +16,128 @@ import * as Icon from "./icon";
 import * as Suggestion from "./suggestion";
 import * as Unknown from '../../../../common/unknown';
 
-/*::
+
 import type {Address, DOM, Never} from "reflex";
 import type {Result} from "../../../../common/result";
-import type {Completion, Match, Model, Action} from "./search";
-*/
+
+type URI = string
+
+export type Match =
+  { uri: URI
+  , title: string
+  }
+
+export type Completion =
+  { match: string
+  , hint: string
+  , query: string
+  }
+
+export type Model =
+  { size: number
+  , limit: number
+  , queryID: number
+  , query: ?string
+  , selected: number
+  , matches: {[key:URI]: Match}
+  , items: Array<URI>
+  }
+
+type SearchResult =
+  { queryID: number
+  , matches: Array<Match>
+  }
+
+export type Action =
+  | { type: "NoOp" }
+  | { type: "Reset" }
+  | { type: "Query", query: string }
+  | { type: "Suggest", suggest: Completion }
+  | { type: "Activate" }
+  | { type: "Load", load: URI }
+  | { type: "SelectNext" }
+  | { type: "SelectPrevious" }
+  | { type: "Select", select: URI }
+  | { type: "Unselect" }
+  | { type: "UpdateMatches", updateMatches: SearchResult }
+  | { type: "SearchError", searchError: Error }
+  | { type: "ByURI"
+    , source:
+      { uri: URI
+      , action: Suggestion.Action
+      }
+    }
+  | { type: "Abort", abort: number }
+
+
 
 const NoOp = always({type: "NoOp"});
 
 const Abort =
   queryID =>
   ( { type: "Abort"
-    , source: queryID
+    , abort: queryID
     }
   );
 
 export const SelectNext = { type: "SelectNext" };
 export const SelectPrevious = { type: "SelectPrevious" };
 export const Suggest =
-  (suggestion/*:Completion*/)/*:Action*/ =>
+  (suggestion:Completion):Action =>
   ( { type: "Suggest"
-    , source: suggestion
+    , suggest: suggestion
     }
   );
 
 export const Query =
-  (input/*:string*/)/*:Action*/ =>
+  (input:string):Action =>
   ( { type: "Query"
-    , source: input
+    , query: input
     }
   );
 
-export const Activate =
-  ()/*:Action*/ =>
-  ( { type: "Activate"
-    }
-  );
+const Activate = { type: "Activate" };
 
 const Load =
   (uri) =>
   ( { type: "Load"
-    , uri
+    , load: uri
     }
   );
 
+const SearchError =
+  error =>
+  ( { type: "SearchError"
+    , searchError: error
+    }
+  )
+
+
 const UpdateMatches =
-  (result/*:Result<Error, Array<Match>>*/)/*:Action*/ =>
+  (searchResult) =>
   ( { type: "UpdateMatches"
-    , source: result
+    , updateMatches: searchResult
     }
   );
 
 const byURI =
   uri =>
-  action =>
-  ( { type: "ByURI"
-    , source:
-      { uri
-      , action
-      }
+  action => {
+    switch (action.type) {
+      case "Select":
+        return {
+          type: "Select",
+          select: uri
+        }
+      case "Activate":
+        return Activate;
+      default:
+        return {
+          type: "ByURI",
+          source: { uri, action }
+        }
     }
-  );
-
-const decodeFailure = ({target: request}) =>
-  error
-  // @FlowIssue: Flow does not know about `request.url`
-  (Error(`Network request to ${request.url} has failed: ${request.statusText}`));
+  };
 
 const decodeResponseFailure =
   request =>
@@ -98,7 +154,7 @@ const decodeMatches =
 const decodeMatch =
   match =>
   ( { title: match
-    , uri: `https://duckduckgo.com/?q=${encodeURIComponent(match)}`
+    , uri: `https://duckduckgo.com/html/?q=${encodeURIComponent(match)}`
     }
   );
 
@@ -126,14 +182,14 @@ const abort =
   })
 
 const search =
-  ( id/*:number*/
-  , input/*:string*/
-  , limit/*:number*/
-  )/*:Task<Never, Result<Error, Array<Match>>>*/ =>
+  ( id:number
+  , input:string
+  , limit:number
+  ):Task<Error, SearchResult> =>
   new Task((succeed, fail) => {
     const request = new XMLHttpRequest({ mozSystem: true });
     pendingRequests[id] = request;
-    const uri = `http://ac.duckduckgo.com/ac/?q=${input}&type=list`
+    const uri = `https://ac.duckduckgo.com/ac/?q=${input}&type=list`
     request.open
     ( 'GET'
     , uri
@@ -145,11 +201,16 @@ const search =
 
     request.onerror = event => {
       delete pendingRequests[id];
-      succeed(decodeFailure(event));
+      fail(Error(`Network request to ${uri} has failed: ${request.statusText}`))
     };
     request.onload = event => {
       delete pendingRequests[id];
-      succeed(decodeResponse(event));
+      const result = decodeResponse(event);
+      if (result.isOk) {
+        succeed({ queryID: id, matches: result.value });
+      } else {
+        fail(result.error);
+      }
     };
 
     request.send();
@@ -157,7 +218,7 @@ const search =
 
 
 export const init =
-  (query/*:string*/, limit/*:number*/)/*:[Model, Effects<Action>]*/ =>
+  (query:string, limit:number):[Model, Effects<Action>] =>
   [ { query
     , size: 0
     , queryID: 0
@@ -176,15 +237,21 @@ const unselect =
   ]
 
 const suggest = model =>
-  [ model
-  , Effects.receive
-    ( Suggest
-      ( { match: model.matches[model.items[model.selected]].title
-        , hint: ''
-        }
+  ( model.query == null
+  ? [ model, Effects.none ]
+  : model.items.length === 0
+  ? [ model, Effects.none ]
+  : [ model
+    , Effects.receive
+      ( Suggest
+        ( { query: model.query
+          , match: model.matches[model.items[model.selected]].title
+          , hint: ''
+          }
+        )
       )
-    )
-  ]
+    ]
+  );
 
 const selectNext =
   model =>
@@ -201,6 +268,17 @@ const selectNext =
       }
     )
   )
+
+const select =
+  (model, uri) => {
+    const index = model.items.indexOf(uri)
+    const selected =
+      ( index < 0
+      ? model.selected
+      : index
+      )
+    return suggest(merge(model, {selected}))
+  }
 
 const selectPrevious =
   model =>
@@ -225,7 +303,8 @@ const updateQuery =
   : query.trim() === ""
   ? [ merge
       ( model
-      , { query: ""
+      , { queryID: model.queryID + 1
+        , query: ""
         , selected: -1
         , matches: {}
         , items: []
@@ -242,21 +321,19 @@ const updateQuery =
           .map(Abort)
 
         , Effects.perform
-          (search(model.queryID + 1, query, model.limit))
-          .map(UpdateMatches)
+          ( search(model.queryID + 1, query, model.limit)
+            .map(UpdateMatches)
+            .recover(SearchError)
+          )
         ]
       )
     ]
   );
 
-
 const updateMatches = (model, result) =>
-  ( result.isOk
-  ? replaceMatches(model, result.value)
-  : [ model
-    , Effects.perform(Unknown.error(result.error))
-      .map(NoOp)
-    ]
+  ( result.queryID !== model.queryID
+  ? [ model, Effects.none ]
+  : replaceMatches(model, result.matches)
   );
 
 const replaceMatches = (model, results) => {
@@ -314,32 +391,67 @@ const activate =
   ]
 
 export const update =
-  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
-  ( action.type === "Query"
-  ? updateQuery(model, action.source)
-  : action.type === "SelectNext"
-  ? selectNext(model)
-  : action.type === "SelectPrevious"
-  ? selectPrevious(model)
-  : action.type === "Unselect"
-  ? unselect(model)
-  : action.type === "UpdateMatches"
-  ? updateMatches(model, action.source)
-  : action.type === "ByURI"
-  ? updateByURI(model, action.source)
-  : action.type === "Activate"
-  ? activate(model)
-  : Unknown.update(model, action)
-  )
+  (model:Model, action:Action):[Model, Effects<Action>] => {
+    switch (action.type) {
+      case "Query":
+        return updateQuery(model, action.query);
+      case "Reset":
+        return reset(model);
+      case "SelectNext":
+        return selectNext(model);
+      case "SelectPrevious":
+        return selectPrevious(model);
+      case "Select":
+        return select(model, action.select);
+      case "Unselect":
+        return unselect(model);
+      case "UpdateMatches":
+        return updateMatches(model, action.updateMatches);
+      case "SearchError":
+        return reportError(model, action.searchError);
+      case "ByURI":
+        return updateByURI(model, action.source);
+      case "Activate":
+        return activate(model);
+      default:
+        return Unknown.update(model, action);
+    }
+  }
+
+export const reset =
+  (state:Model):[Model, Effects<Action>] => {
+    const model =
+      { query: ""
+      , size: 0
+      , queryID: 0
+      , limit: state.limit
+      , selected: -1
+      , matches: {}
+      , items: []
+      }
+
+    const fx =
+      Effects.perform(abort(state.queryID))
+      .map(Abort)
+
+    return [model, fx]
+  }
+
+const reportError =
+  (model, error) =>
+  [ model
+  , Effects.perform(Unknown.error('Search error occured', error))
+  ]
+
 
 const innerView =
-  (model, address, isSelected) =>
+  (model, isSelected) =>
   [ Icon.view('', isSelected)
   , Title.view(model.title, isSelected)
   ];
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   html.section
   ( { style: {borderColor: 'inherit' } }
   , model
@@ -351,15 +463,15 @@ export const render =
       ( model.selected === index
       , innerView
         ( model.matches[uri]
-        , forward(address, byURI(uri))
         , model.selected === index
         )
+      , forward(address, byURI(uri))
       )
     )
   )
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>):DOM =>
   thunk
   ( 'search'
   , render

@@ -176,13 +176,21 @@ const metaBooleanProperty = update => {
 
 export const focus = metaBooleanProperty((node, next, previous) => {
   if (next != previous) {
-    Promise.resolve().then(() => {
-      if (next) {
-        node.focus();
-      } else {
-        node.blur();
+    if (next) {
+      node.focus();
+      // If node did not get focused, it is because this is initial render and
+      // in such case VirtualDOM library calls hooks before nodes are actualy
+      // part of document and there for `.focus()` has no effect. In this case
+      // we just repeat `.focus()` on next tick, as by then node will be part
+      // of the document.
+      if (node.ownerDocument.activeElement !== node) {
+        Promise.resolve().then(() => {
+          node.focus();
+        })
       }
-    })
+    } else {
+      node.blur();
+    }
   }
 });
 
@@ -194,16 +202,14 @@ const isSameSelection = (a, b) =>
 export const selection = metaProperty((node, next, previous) => {
   if (next != null && !isSameSelection(next, previous)) {
     const {start, end, direction} = next;
-    Promise.resolve().then(() => {
-      node.setSelectionRange(start === Infinity ? node.value.length : start,
-                             end === Infinity ? node.value.length : end,
-                             direction);
-    })
+    node.setSelectionRange(start === Infinity ? node.value.length : start,
+                           end === Infinity ? node.value.length : end,
+                           direction);
   }
 });
 
 
-export const forceRender/*:Task<Error, void>*/ =
+export const forceRender:Task<Error, void> =
   new Task
   ( (succeed, fail) => {
       if (window.renderer) {
@@ -234,12 +240,12 @@ const handleEvent = phase => event => {
     handler.handleEvent(event)
   }
 }
-const handleCapturing/*:EventListener*/ = handleEvent('capture')
-const handleBubbling/*:EventListener*/ = handleEvent('bubble')
+const handleCapturing:EventListener = handleEvent('capture')
+const handleBubbling:EventListener = handleEvent('bubble')
 
 
 export const replaceElement =
-  (query/*:string*/, element/*:HTMLElement*/)/*:Task<Error, void>*/ =>
+  (query:string, element:HTMLElement):Task<Error, void> =>
   new Task
   ( ( succeed, fail ) => {
       const target = document.querySelector(query)
@@ -292,6 +298,6 @@ export const replaceElement =
   );
 
 export const forceReplace =
-  (query/*:string*/, element/*:HTMLElement*/)/*:Task<Error, void>*/ =>
+  (query:string, element:HTMLElement):Task<Error, void> =>
   forceRender
   .chain(_ => replaceElement(query, element));

@@ -12,15 +12,13 @@ import * as Toolbar from './Toolbar';
 import * as Tab from './Tab';
 import * as Unknown from '../../common/unknown';
 
-/*::
 import type {Address, DOM} from "reflex"
-import * as Tab from "./Tab"
-import * as Navigator from "../Navigators/Navigator"
+import type {Model as NavigatorModel} from "../Navigators/Navigator"
 import * as Deck from "../../common/Deck"
 
 export type ID = string
 export type Context = Tab.Context
-export type Model = Deck.Model<Navigator.Model>
+export type Model = Deck.Model<NavigatorModel>
 
 export type Action =
   | { type: "Close", id: ID }
@@ -32,7 +30,6 @@ export type Action =
       , tab: Tab.Action
       }
     }
-*/
 
 const styleSheet = Style.createSheet({
   base: {
@@ -40,13 +37,14 @@ const styleSheet = Style.createSheet({
     height: `calc(100% - ${Toolbar.height})`,
     // This padding matches title bar height.
     paddingTop: '32px',
-    overflowY: 'scroll',
+    overflowX: 'hidden',
+    overflowY: 'auto',
     boxSizing: 'border-box'
   }
 });
 
 export const Close =
-  (id/*:ID*/)/*:Action*/ =>
+  (id:ID):Action =>
   ( { type: "Close"
     , id
     }
@@ -54,7 +52,7 @@ export const Close =
 
 
 export const Select =
-  (id/*:ID*/)/*:Action*/ =>
+  (id:ID):Action =>
   ( { type: "Select"
     , id
     }
@@ -84,7 +82,7 @@ const settings =
   }
 
 export const render =
-  (model/*:Model*/, address/*:Address<Action>*/, context/*:Context*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>, context:Context):DOM =>
   html.div
   ( settings
   , model
@@ -100,7 +98,7 @@ export const render =
   );
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/, context/*:Context*/)/*:DOM*/ =>
+  (model:Model, address:Address<Action>, context:Context):DOM =>
   thunk
   ( 'Browser/Sidebar/Tabs'
   , render

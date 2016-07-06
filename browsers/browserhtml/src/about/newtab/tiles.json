@@ -15,64 +15,64 @@
   ]
 , "entries":
   { "0":
-    { "title": "YouTube"
-    , "uri": "https://youtube.com"
-    , "src": "./tiles/youtube.com.png"
+    { "title": "DuckDuckGo"
+    , "uri": "https://duckduckgo.com/html/"
+    , "src": "./tiles/duckduckgo.com.png"
     }
   , "1":
-    { "title": "Facebook"
-    , "uri": "https://facebook.com"
-    , "src": "./tiles/facebook.com.png"
-    }
-  , "2":
-    { "title": "Amazon"
-    , "uri": "https://amazon.com"
-    , "src": "./tiles/amazon.com.png"
-    }
-  , "3":
-    { "title": "Twitter"
-    , "uri": "https://twitter.com"
-    , "src": "./tiles/twitter.com.png"
-    }
-  , "4":
-    { "title": "Wikipedia"
-    , "uri": "https://wikipedia.org"
-    , "src": "./tiles/wikipedia.org.png"
-    }
-  , "5":
-    { "title": "Quartz"
-    , "uri": "https://qz.com"
-    , "src": "./tiles/qz.com.png"
-    }
-  , "6":
-    { "title": "Medium"
-    , "uri": "https://medium.com"
-    , "src": "./tiles/medium.com.png"
-    }
-  , "7":
-    { "title": "Vox"
-    , "uri": "https://vox.com"
-    , "src": "./tiles/vox.com.png"
-    }
-  , "8":
-    { "title": "Tumblr"
-    , "uri": "https://tumblr.com"
-    , "src": "./tiles/tumblr.com.png"
-    }
-  , "9":
     { "title": "Github"
     , "uri": "https://github.com"
     , "src": "./tiles/github.com.png"
     }
+  , "2":
+    { "title": "Wikipedia"
+    , "uri": "https://wikipedia.org"
+    , "src": "./tiles/wikipedia.org.png"
+    }
+  , "3":
+    { "title": "arstechnica"
+    , "uri": "http://arstechnica.com"
+    , "src": "./tiles/arstechnica.com.png"
+    }
+  , "4":
+    { "title": "Reddit"
+    , "uri": "https://reddit.com"
+    , "src": "./tiles/reddit.com.png"
+    }
+  , "5":
+    { "title": "Hacker News"
+    , "uri": "https://news.ycombinator.com"
+    , "src": "./tiles/news.ycombinator.com.png"
+    }
+  , "6":
+    { "title": "Servo"
+    , "uri": "https://servo.org"
+    , "src": "./tiles/servo.org.png"
+    }
+  , "7":
+    { "title": "Rust"
+    , "uri": "https://www.rust-lang.org"
+    , "src": "./tiles/rust-lang.org.png"
+    }
+  , "8":
+    { "title": "Demo: Evil Ad"
+    , "uri": "./demos/evil_ad/physics/with-ad.html"
+    , "src": "./tiles/demo-evil-ad.png"
+    }
+  , "9":
+    { "title": "Demo: Moire"
+    , "uri": "./demos/moire.html"
+    , "src": "./tiles/demo-moire.png"
+    }
   , "10":
-    { "title": "Stack Overflow"
-    , "uri": "https://stackoverflow.com"
-    , "src": "./tiles/stackoverflow.com.png"
+    { "title": "Demo: Spheres"
+    , "uri": "./demos/spheres.html"
+    , "src": "./tiles/demo-spheres.png"
     }
   , "11":
-    { "title": "browser.html Slack"
-    , "uri": "https://browserhtml.slack.com"
-    , "src": "./tiles/slack.com.png"
+    { "title": "Demo: Transparent Rects"
+    , "uri": "./demos/transparent_rects.html"
+    , "src": "./tiles/demo-transparent_rects.png"
     }
   }
 }
